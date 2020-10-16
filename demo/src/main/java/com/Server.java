@@ -17,7 +17,7 @@ public abstract class Server {
 
     public void start(final int port) throws InterruptedException {
         EventLoopGroup boss = new NioEventLoopGroup(2);
-        EventLoopGroup work = new NioEventLoopGroup(10);
+        EventLoopGroup work = new NioEventLoopGroup(2);
 
         ServerBootstrap bootstrap = new ServerBootstrap();
         ChannelFuture f = bootstrap.group(boss, work)

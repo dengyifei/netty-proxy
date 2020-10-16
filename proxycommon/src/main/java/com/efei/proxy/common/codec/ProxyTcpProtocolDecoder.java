@@ -1,15 +1,15 @@
-package com.efei.proxy.channelHandler;
+package com.efei.proxy.common.codec;
 
+import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
 /**
- * 流解码器
+ * 将数据包解析成数据对象ProxyTcpProtocolBean
  */
-@ChannelHandler.Sharable
-public class ProxyTcpDecoder extends LengthFieldBasedFrameDecoder {
+// @ChannelHandler.Sharable 不能添加固件线程不安全吧
+public class ProxyTcpProtocolDecoder extends LengthFieldBasedFrameDecoder {
 
     private static final int MAX_FRAME_LENGTH = 1024 * 1024;  //最大长度
     private static final int LENGTH_FIELD_LENGTH = 4;  //长度字段所占的字节数
@@ -17,20 +17,24 @@ public class ProxyTcpDecoder extends LengthFieldBasedFrameDecoder {
     private static final int LENGTH_ADJUSTMENT = 0;
     private static final int INITIAL_BYTES_TO_STRIP = 0;
 
-    private static ProxyTcpDecoder self = null;
+    private static ProxyTcpProtocolDecoder self = null;
 
-    public static synchronized  ProxyTcpDecoder getSelf() {
+    public static synchronized ProxyTcpProtocolDecoder getSelf() {
         if(self==null){
-            self = new ProxyTcpDecoder(MAX_FRAME_LENGTH,LENGTH_FIELD_OFFSET,LENGTH_FIELD_LENGTH,LENGTH_ADJUSTMENT,INITIAL_BYTES_TO_STRIP,false);
+            self = new ProxyTcpProtocolDecoder(MAX_FRAME_LENGTH,LENGTH_FIELD_OFFSET,LENGTH_FIELD_LENGTH,LENGTH_ADJUSTMENT,INITIAL_BYTES_TO_STRIP,false);
         }
         return self;
     }
 
-    public ProxyTcpDecoder(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength) {
+//    public static  ProxyTcpDecoder getSelf() {
+//          return  snew ProxyTcpDecoder(MAX_FRAME_LENGTH,LENGTH_FIELD_OFFSET,LENGTH_FIELD_LENGTH,LENGTH_ADJUSTMENT,INITIAL_BYTES_TO_STRIP,false);
+//    }
+
+    public ProxyTcpProtocolDecoder(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength) {
         super(maxFrameLength, lengthFieldOffset, lengthFieldLength);
     }
 
-    public ProxyTcpDecoder(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength, int lengthAdjustment, int initialBytesToStrip, boolean failFast){
+    public ProxyTcpProtocolDecoder(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength, int lengthAdjustment, int initialBytesToStrip, boolean failFast){
         super(maxFrameLength, lengthFieldOffset, lengthFieldLength, lengthAdjustment, initialBytesToStrip, failFast);
     }
 
@@ -40,7 +44,8 @@ public class ProxyTcpDecoder extends LengthFieldBasedFrameDecoder {
         if(in == null)
             return null;
         if(in.readableBytes()<12){
-            throw  new IllegalArgumentException("字节数不足");
+            System.err.println("字节数不足");
+            throw new IllegalArgumentException("字节数不足");
         }
         // 消息类型
         byte type = in.readByte();

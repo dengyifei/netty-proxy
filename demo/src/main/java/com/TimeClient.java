@@ -33,7 +33,7 @@ public class TimeClient {
                                 try {
                                     long currentTimeMillis = (m.readUnsignedInt() - 2208988800L) * 1000L;
                                     System.out.println(new Date(currentTimeMillis));
-                                    ctx.close();
+                                    //ctx.close();
                                 } finally {
                                     m.release();
                                 }
@@ -51,9 +51,11 @@ public class TimeClient {
         try{
             // 启动客户端
             ChannelFuture f = b.connect(host, port).sync(); // (5)
-
+            System.out.println("xxx");
             // 等待连接关闭
             f.channel().closeFuture().sync();
+            System.out.println("xxx2");
+
         }catch (Exception e){
             e.printStackTrace();
         }finally {

@@ -20,5 +20,10 @@ public class proxyMainClient {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
+        try {
+            ProxyTransmitClient.start(args);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

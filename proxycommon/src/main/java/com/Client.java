@@ -106,9 +106,9 @@ public abstract class Client {
         this.channel.writeAndFlush(msg).addListener(new GenericFutureListener<ChannelFuture>() {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if(future.isSuccess()){
-                    // System.out.println("send msg success");
+                    System.out.println("send msg success");
                 } else {
-                    // System.err.println("send msg error::" + future);
+                    System.err.println("send msg error::" + future);
                 }
             }
         });

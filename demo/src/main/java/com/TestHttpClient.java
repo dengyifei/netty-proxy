@@ -55,7 +55,6 @@ public class TestHttpClient extends Client{
         msg.headers().add("Connection", "keep-alive");
         msg.headers().add("User-Agent", "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36 acrabsoft.rpc.1.1");
         System.out.println("-------------------------");
-
         sendMsg(msg);
 
     }
