@@ -1,23 +1,24 @@
 package com.efei.proxy;
 
-import com.Client;
 import com.Server;
 import com.efei.proxy.channelHandler.ProxyRequestDataHandler;
-import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
-import com.efei.proxy.common.cache.Cache;
-import com.efei.proxy.common.util.MathUtil;
-import io.netty.buffer.ByteBuf;
+import com.efei.proxy.config.ProxyConfig;
+import com.efei.proxy.config.ServerConfig;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.util.AttributeKey;
-import io.netty.util.ReferenceCountUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * 对外访问入口的http代理服务
  */
+@Component
 public class ProxyHttpServer extends Server {
 
 
+    @Autowired
+    private ProxyConfig.ProxyHttpServerConfig proxyHttpServerConfig;
 
     public ChannelInitializer<SocketChannel> getChannelInitializer() {
 
@@ -30,7 +31,12 @@ public class ProxyHttpServer extends Server {
         };
     }
 
-    public static void start(String[] args) throws InterruptedException {
-        new ProxyHttpServer().start(9000);
+    @Override
+    public ServerConfig getServerConfig() {
+        return proxyHttpServerConfig;
+    }
+
+    public  void start() throws InterruptedException {
+        start(proxyHttpServerConfig.getPort());
     }
 }

@@ -1,0 +1,17 @@
+proxyTransmitClient:
+  host: 127.0.0.1
+  port: 5000
+  loginName: efei
+  soBacklog: 128
+  soSendBuf: 10240
+  soRcvbuf: 102400
+  tcpNodeLay: true
+proxyHttpClient:
+  # 目标服务
+  host: 127.0.0.1
+  # 目标端口
+  port: 8788
+  soBacklog: 128
+  soSendBuf: 10240
+  soRcvbuf: 102400
+  tcpNodeLay: true

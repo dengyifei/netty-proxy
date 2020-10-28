@@ -62,7 +62,7 @@ public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
         String key = ctx.attr(userchannelkey).get();
         ProxyTcpProtocolBean b = new ProxyTcpProtocolBean((byte)1,(byte)1,key,content.length,content);
         logger.debug(b.toStr());
-        Channel c = Cache.get("xefeia");
+        Channel c = Cache.get("efei");
         if(c!=null){
             c.writeAndFlush(b.toByteBuf());
         } else {

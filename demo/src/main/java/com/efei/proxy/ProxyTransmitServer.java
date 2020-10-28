@@ -4,15 +4,26 @@ import com.Server;
 import com.efei.proxy.channelHandler.LoginChannelHandler;
 import com.efei.proxy.channelHandler.ProxyReponseDataHandler;
 import com.efei.proxy.common.codec.ProxyTcpProtocolDecoder;
+import com.efei.proxy.config.ProxyConfig;
+import com.efei.proxy.config.ServerConfig;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 
 /**
  * 代理转发服务，一般转发给客户端
  */
+
+@Component
 public class ProxyTransmitServer extends Server{
+
+
+    @Autowired
+    private ProxyConfig.ProxyTransmitServerConfig proxyTransmitServerConfig;
 
     public ChannelInitializer<SocketChannel> getChannelInitializer() {
         return new ChannelInitializer<SocketChannel>() {
@@ -38,7 +49,12 @@ public class ProxyTransmitServer extends Server{
         };
     }
 
-    public static void start(String[] args) throws InterruptedException {
-        new ProxyTransmitServer().start(5000);
+    @Override
+    public ServerConfig getServerConfig() {
+        return proxyTransmitServerConfig;
+    }
+
+    public  void start() throws InterruptedException {
+        start(proxyTransmitServerConfig.getPort());
     }
 }

@@ -4,11 +4,14 @@ import com.efei.proxy.ClientFacetory;
 import com.efei.proxy.ProxyHttpClient;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.cache.Cache;
+import com.efei.proxy.config.ProxyConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -16,12 +19,16 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * 处理转发服务端转过来的数据,数据转发到目标服务
  */
+@Component
 @ChannelHandler.Sharable
 public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyRequestDataInboundHandler.class);
 
     private Lock lock = new ReentrantLock();
+
+    @Autowired
+    private ProxyConfig.ProxyHttpClientConfig proxyHttpClientConfig;
 
     private  static ProxyRequestDataInboundHandler self = null;
 
@@ -66,7 +73,7 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
                 if(c==null){
                     c = (ProxyHttpClient)ClientFacetory.buildCacheProxyHttpClient(msg2.getKey(),2*60*1000);
                     c.setKey(msg2.getKey());
-                    c.connect("192.168.50.3",8788);
+                    c.connect(proxyHttpClientConfig.getHost(),proxyHttpClientConfig.getPort());
                 }
             }finally {
                 lock.unlock();

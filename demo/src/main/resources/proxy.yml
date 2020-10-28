@@ -1,0 +1,19 @@
+#transmit server
+transmitServer:
+  port: 5000
+  soBacklog: 128
+  soSendBuf: 10240
+  soRcvbuf: 102400
+  tcpNodeLay: true
+#proxyhttpserver
+proxyHttpServer:
+  port: 9000
+  soBacklog: 128
+  soSendBuf: 10240
+  soRcvbuf: 102400
+  tcpNodeLay: true
+#h2
+h2:
+  url: jdbc:h2:~/h2/proxydb
+  username: root
+  password: root

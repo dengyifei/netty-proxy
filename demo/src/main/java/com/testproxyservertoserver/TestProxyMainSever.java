@@ -7,23 +7,23 @@ import com.efei.proxy.ProxyTransmitServer;
  */
 public class TestProxyMainSever {
     public static void main(String[] args)  {
-        Thread porxyHttpServerThread = new Thread(()->{
-            try {
-                TestProxyHttpServer.start(args);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        },"PorxyHttpServer");
+//        Thread porxyHttpServerThread = new Thread(()->{
+//            try {
+//                TestProxyHttpServer.start(args);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        },"PorxyHttpServer");
 
-        Thread proxyTransmitServer = new Thread(()->{
-            try {
-                ProxyTransmitServer.start(args);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        },"proxyTransmitServer");
+//        Thread proxyTransmitServer = new Thread(()->{
+//            try {
+//                ProxyTransmitServer.start(args);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        },"proxyTransmitServer");
 
-        porxyHttpServerThread.start();
+        //porxyHttpServerThread.start();
         // proxyTransmitServer.start();
 
     }

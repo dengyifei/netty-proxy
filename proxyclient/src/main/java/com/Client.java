@@ -1,5 +1,6 @@
 package com;
 
+import com.efei.proxy.config.ClientConfig;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -10,6 +11,8 @@ import io.netty.util.concurrent.GenericFutureListener;
 
 public abstract class Client {
     public abstract ChannelInitializer<SocketChannel> getChannelInitializer();
+
+    public abstract ClientConfig getClientConfig();
 
     public abstract void onConnectSuccess();
 
@@ -39,8 +42,9 @@ public abstract class Client {
         ChannelFuture f = boot.channel(NioSocketChannel.class)
                 .handler(getChannelInitializer())
                 .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.SO_SNDBUF, 128)
-                .option(ChannelOption.SO_RCVBUF, 256)
+                .option(ChannelOption.SO_SNDBUF, getClientConfig().getSoSendBuf())
+                .option(ChannelOption.SO_RCVBUF, getClientConfig().getSoRcvbuf())
+                .option(ChannelOption.TCP_NODELAY,getClientConfig().isTcpNodeLay())
                 .group(work)
                 .connect(host, port).sync();
         channel = f.channel();

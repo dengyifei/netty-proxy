@@ -3,8 +3,10 @@ package com.efei.proxy;
 import com.Client;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.cache.Cache;
+import com.efei.proxy.common.util.SpringConfigTool;
+import com.efei.proxy.config.ClientConfig;
+import com.efei.proxy.config.ProxyConfig;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.AttributeKey;
@@ -50,38 +52,21 @@ public class ProxyHttpClient extends Client {
                 pip.addLast(new ChannelInboundHandlerAdapter(){
                     @Override
                     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                        System.out.println("xxx");
-                        int frameLength = 500*1000;
-                        Integer numreads = ctx.channel().attr(numreadsKey).get();
-                        if(numreads==null){
-                            numreads = 0;
-                        } else {
-                            numreads = numreads+1;
-                        }
-                        ctx.channel().attr(numreadsKey).set(numreads);
-
                         byte[] content =null;
                         ByteBuf in = (ByteBuf) msg;
-                        if (in.readableBytes() < frameLength) {
-                            if(numreads>10){
-                                content = new byte[in.readableBytes()];
-                                in.readBytes(content);
-                            }
-                        } else {
-                            content = new byte[in.readableBytes()];
-                            in.readBytes(content);
-                        }
-                        System.out.println("xxx:"+numreads);
+                        content = new byte[in.readableBytes()];
+                        in.readBytes(content);
+                        //System.out.println("xxx:"+content);
                         if(content!=null){
                             ProxyTcpProtocolBean b = new ProxyTcpProtocolBean((byte)1,(byte)2,key,content.length,content);
                             logger.debug(b.toStr());
-                            Client c = Cache.get(ProxyTransmitClient.class.getSimpleName());
+                            //Client c = Cache.get(ProxyTransmitClient.class.getSimpleName());
+                            Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
                             c.sendMsg(b.toByteBuf());
                             ReferenceCountUtil.release(msg);
                         } else {
                             ctx.fireChannelRead(msg);
                         }
-
                         //ReferenceCountUtil.release(msg);
                     }
 
@@ -111,6 +96,11 @@ public class ProxyHttpClient extends Client {
     @Override
     public void onClosed() {
        Cache.remove(key);
+    }
+
+    @Override
+    public ClientConfig getClientConfig() {
+        return SpringConfigTool.getBean(ProxyConfig.ProxyHttpClientConfig.class);
     }
 
     public void addMsg(ByteBuf msg){

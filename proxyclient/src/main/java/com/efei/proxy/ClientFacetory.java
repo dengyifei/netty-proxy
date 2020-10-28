@@ -19,7 +19,7 @@ public class ClientFacetory {
      * @param key
      * @return
      */
-    public static Client buildCacheProxyHttpClient(String key,long expire){
+    public static Client buildCacheProxyHttpClient(String key, long expire){
         ProxyHttpClient p = Cache.get(key);
         if(p==null){
             p = new ProxyHttpClient();
@@ -28,10 +28,10 @@ public class ClientFacetory {
         return p;
     }
 
-    public static ProxyTransmitClient buildProxyTransmitClient(){
-        ProxyTransmitClient  c = new ProxyTransmitClient();
-        return c;
-    }
+//    public static ProxyTransmitClient buildProxyTransmitClient(){
+//        ProxyTransmitClient  c = new ProxyTransmitClient();
+//        return c;
+//    }
 
     public static ProxyHttpClient buildProxyHttpClient(){
         ProxyHttpClient  c = new ProxyHttpClient();

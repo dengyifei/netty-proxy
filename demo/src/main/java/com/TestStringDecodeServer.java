@@ -1,6 +1,7 @@
 package com;
 
 
+import com.efei.proxy.config.ServerConfig;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -12,6 +13,12 @@ import io.netty.util.CharsetUtil;
 import java.nio.charset.Charset;
 
 public class TestStringDecodeServer extends Server {
+
+    @Override
+    public ServerConfig getServerConfig() {
+        return null;
+    }
+
     public ChannelInitializer<SocketChannel> getChannelInitializer() {
         return new ChannelInitializer<SocketChannel>(){
 

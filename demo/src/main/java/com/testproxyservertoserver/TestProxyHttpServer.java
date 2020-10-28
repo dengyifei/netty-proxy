@@ -2,6 +2,7 @@ package com.testproxyservertoserver;
 
 import com.Client;
 import com.Server;
+import com.efei.proxy.config.ServerConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
@@ -16,6 +17,11 @@ public class TestProxyHttpServer extends Server {
 
 
     private AttributeKey<Client> attrClient = AttributeKey.valueOf("Client");
+
+    @Override
+    public ServerConfig getServerConfig() {
+        return null;
+    }
 
     public ChannelInitializer<SocketChannel> getChannelInitializer() {
         return new ChannelInitializer<SocketChannel>() {

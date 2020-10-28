@@ -1,14 +1,8 @@
 package com.efei.proxy.channelHandler;
 
-import com.Client;
-import com.efei.proxy.ProxyTransmitClient;
-import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
-import com.efei.proxy.common.cache.Cache;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.util.ReferenceCountUtil;
 
 @ChannelHandler.Sharable
 public class ProxyReponseDataInboundHandler extends ChannelInboundHandlerAdapter {
