@@ -6,6 +6,8 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
 import java.util.Date;
 
@@ -26,25 +28,25 @@ public class TimeClient {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pip = ch.pipeline();
-                        pip.addLast(new ChannelInboundHandlerAdapter(){
-                            @Override
-                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                                ByteBuf m = (ByteBuf) msg; // (1)
-                                try {
-                                    long currentTimeMillis = (m.readUnsignedInt() - 2208988800L) * 1000L;
-                                    System.out.println(new Date(currentTimeMillis));
-                                    //ctx.close();
-                                } finally {
-                                    m.release();
-                                }
-                            }
-
-                            @Override
-                            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-                                cause.printStackTrace();
-                                ctx.close();
-                            }
-                        });
+//                        pip.addLast(new ChannelInboundHandlerAdapter(){
+//                            @Override
+//                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+//                                ByteBuf m = (ByteBuf) msg; // (1)
+//                                try {
+//                                    long currentTimeMillis = (m.readUnsignedInt() - 2208988800L) * 1000L;
+//                                    System.out.println(new Date(currentTimeMillis));
+//                                    //ctx.close();
+//                                } finally {
+//                                    m.release();
+//                                }
+//                            }
+//
+//                            @Override
+//                            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+//                                cause.printStackTrace();
+//                                ctx.close();
+//                            }
+//                        });
                     }
                 });
 
@@ -53,13 +55,19 @@ public class TimeClient {
             ChannelFuture f = b.connect(host, port).sync(); // (5)
             System.out.println("xxx");
             // 等待连接关闭
-            f.channel().closeFuture().sync();
-            System.out.println("xxx2");
-
+            f.channel().closeFuture().addListener(new GenericFutureListener<ChannelFuture>() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    System.out.println("xxx2");
+                    work.shutdownGracefully();
+                }
+            });
+            System.out.println("xxxx3");
         }catch (Exception e){
             e.printStackTrace();
         }finally {
-            work.shutdownGracefully();
+            System.out.println("xxxx4");
+
         }
 
     }

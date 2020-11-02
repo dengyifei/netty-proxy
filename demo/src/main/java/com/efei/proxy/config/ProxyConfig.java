@@ -37,6 +37,10 @@ public class ProxyConfig {
     @Component
     //@Import(ProxyConfig.class)
     public static class ProxyHttpServerConfig extends ServerConfig{
+
+        @Value("${proxyHttpServer.maxContentLength}")
+        int maxContentLength;
+
         @Value("${proxyHttpServer.port}")
         int port;
 
@@ -71,6 +75,10 @@ public class ProxyConfig {
         public boolean isTcpNodeLay() {
             return tcpNodeLay;
         }
+
+        public int getMaxContentLength() {
+            return maxContentLength;
+        }
     }
 
     @Component
@@ -90,6 +98,9 @@ public class ProxyConfig {
 
         @Value("${transmitServer.tcpNodeLay}")
         boolean tcpNodeLay;
+
+        @Value("${transmitServer.maxFrameLength}")
+        int maxFrameLength;
 
         public int getPort() {
             return port;

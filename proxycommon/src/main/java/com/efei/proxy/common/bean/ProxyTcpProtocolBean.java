@@ -86,6 +86,14 @@ public class ProxyTcpProtocolBean {
         return buf;
     }
 
+    public void toByteBuf(ByteBuf buf){
+        buf.writeByte(this.getType());
+        buf.writeByte(this.getFlag());
+        buf.writeBytes(this.getKeyBytes());
+        buf.writeInt(this.getLength());
+        buf.writeBytes(this.getContent());
+    }
+
     public String toStr(){
         StringBuffer sb = new StringBuffer();
         sb.append("type=");

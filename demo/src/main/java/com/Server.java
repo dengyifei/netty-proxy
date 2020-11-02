@@ -8,8 +8,11 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.util.internal.logging.InternalLogger;
+import io.netty.util.internal.logging.InternalLoggerFactory;
 
 public abstract class Server {
+    private static  InternalLogger logger = InternalLoggerFactory.getInstance(Server.class);
 
     public abstract ChannelInitializer<SocketChannel> getChannelInitializer();
 
@@ -17,6 +20,8 @@ public abstract class Server {
 
     EventLoopGroup boss = null;
     EventLoopGroup work = null;
+
+    Channel channel;
 
 //    private int soBacklog;
 //    private int soSendBuf;
@@ -48,18 +53,24 @@ public abstract class Server {
         f.addListener(new GenericFutureListener<ChannelFuture>() {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    System.out.println(String.format("success start server %s",port));
+                    logger.info(String.format("success start server %s",port));
                 }
             }
         }).sync();
-        f.channel().closeFuture().sync();
-        boss.shutdownGracefully();
-        work.shutdownGracefully();
+        channel = f.channel();
+        f.channel().closeFuture().addListener(new GenericFutureListener<ChannelFuture>() {
+            public void operationComplete(ChannelFuture future) throws Exception {
+                if (future.isSuccess()) {
+                    logger.info(String.format("success stop server %s",port));
+                    work.shutdownGracefully();
+                    boss.shutdownGracefully();
+                }
+            }
+        });
     }
 
     public void stop(){
-        System.out.println("关闭");
-        boss.shutdownGracefully();
-        work.shutdownGracefully();
+        logger.info("stop server...");
+        channel.close();
     }
 }

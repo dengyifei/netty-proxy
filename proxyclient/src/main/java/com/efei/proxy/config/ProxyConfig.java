@@ -9,6 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.util.Properties;
+import java.util.Timer;
 
 @Configuration
 public class ProxyConfig {
@@ -23,6 +24,12 @@ public class ProxyConfig {
         Properties p = yaml.getObject();
         propertySourcesPlaceholderConfigurer.setProperties(yaml.getObject());
         return propertySourcesPlaceholderConfigurer;
+    }
+
+    @Bean
+    public Timer getTimer(){
+        Timer timer = new Timer(true);
+        return timer;
     }
 
     @Component
@@ -72,6 +79,14 @@ public class ProxyConfig {
 
         public int getPort() {
             return port;
+        }
+
+        public void setHost(String host) {
+            this.host = host;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
         }
     }
 
@@ -129,6 +144,10 @@ public class ProxyConfig {
 
         public String getLoginName() {
             return loginName;
+        }
+
+        public void setLoginName(String loginName) {
+            this.loginName = loginName;
         }
     }
 }

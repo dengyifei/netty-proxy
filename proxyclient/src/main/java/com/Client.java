@@ -37,7 +37,7 @@ public abstract class Client {
     public void connect(final String host, final int port) throws InterruptedException {
         this.host = host;
         this.port = port;
-        work = new NioEventLoopGroup(2);// 两个work线程
+        work = new NioEventLoopGroup(10);// 两个work线程
         Bootstrap boot = new Bootstrap();
         ChannelFuture f = boot.channel(NioSocketChannel.class)
                 .handler(getChannelInitializer())
@@ -53,7 +53,7 @@ public abstract class Client {
                 if (future.isSuccess()) {
                     System.out.println(String.format("success connect %s %s", host, port));
                     isConnected = true;
-                    addCloseFuture();
+                    //addCloseFuture();
                     onConnectSuccess();
                 } else {
                     System.out.println(String.format("fail connect %s %s", host, port));
@@ -68,6 +68,13 @@ public abstract class Client {
 //                if(future.isVoid()){
 //                    System.out.println(String.format("Void connect %s %s", host, port));
 //                }
+            }
+        });
+        f.channel().closeFuture().addListener(new GenericFutureListener<ChannelFuture>() {
+            public void operationComplete(ChannelFuture future) throws Exception {
+                if (future.isSuccess()) {
+                    addCloseFuture();
+                }
             }
         });
 //        f.sync();
@@ -87,6 +94,12 @@ public abstract class Client {
     public void close(){
         System.out.println("client closed connection");
         this.channel.close();
+    }
+
+    public void shutdown(){
+        if(work!=null){
+            work.shutdownGracefully();
+        }
     }
 
     public void addCloseFuture(){
@@ -112,7 +125,7 @@ public abstract class Client {
                 if(future.isSuccess()){
                     // System.out.println("send msg success");
                 } else {
-                    // System.err.println("send msg error::" + future);
+                    System.err.println("send msg fail::" + future);
                 }
             }
         });
@@ -120,5 +133,9 @@ public abstract class Client {
 
     public void sendMsg(Object msg,GenericFutureListener<ChannelFuture> listener) {
         this.channel.writeAndFlush(msg).addListener(listener);
+    }
+
+    public Channel getChannel() {
+        return channel;
     }
 }

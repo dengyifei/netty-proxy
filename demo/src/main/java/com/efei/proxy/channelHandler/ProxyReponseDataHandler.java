@@ -33,7 +33,7 @@ public class ProxyReponseDataHandler extends ChannelInboundHandlerAdapter {
         ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean)msg;
         if(msg2.getType() == 1){
             transmitToUserChannel(ctx,msg2);
-            return;
+            // return;
         }
     }
 
@@ -46,8 +46,8 @@ public class ProxyReponseDataHandler extends ChannelInboundHandlerAdapter {
         logger.debug(msg.toStr());
         String key = msg.getKey();
         Channel userChannel = Cache.get(key);
-        ByteBuf buf = Unpooled.buffer();
-        buf.writeBytes(msg.getContent());
-        userChannel.writeAndFlush(buf);
+//        ByteBuf buf = Unpooled.buffer();
+//        buf.writeBytes(msg.getContent());
+        userChannel.writeAndFlush(msg);
     }
 }

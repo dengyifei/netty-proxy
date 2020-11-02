@@ -1,5 +1,6 @@
 package com.efei.proxy;
 
+import com.efei.proxy.common.cache.Cache;
 import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ClientConfig;
 import com.efei.proxy.config.ProxyConfig;
@@ -10,8 +11,16 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.util.StringUtils;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
+import java.util.Timer;
+import java.util.TimerTask;
 
+/**
+ * -server -Xms500m -Xmx500m -XX:NewRatio=5 -XX:SurvivorRatio=8 -XX:+PrintGCDateStamps -XX:+PrintGCDetails -Xloggc:log/gc.log -XX:+UseConcMarkSweepGC -DdomainUser=xefei -Dhost=127.0.0.1 -Dport=8788
+ */
 @Configuration
 @Import(ProxyConfig.class)
 public class ProxyMainClient {
@@ -45,6 +54,9 @@ public class ProxyMainClient {
     @Autowired
     private ProxyConfig.ProxyHttpClientConfig proxyHttpClientConfig;
 
+    @Autowired
+    private Timer timer;
+
     public static void main(String[] args) {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("com.efei.proxy");
         applicationContext = context;
@@ -58,11 +70,42 @@ public class ProxyMainClient {
     }
 
     public void start(){
-        try {
-            ProxyTransmitClient proxyTransmitClient = SpringConfigTool.getBean(ProxyTransmitClient.class);
-            proxyTransmitClient.connect(proxyTransmitClientConfig.getHost(),proxyTransmitClientConfig.getPort());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        // 初始化配置 -DdomainUser=xefei -Dhost=127.0.0.1 -Dport=8788
+        String domainUser = System.getProperty("domainUser");
+        String host = System.getProperty("host");
+        String port = System.getProperty("port");
+        if(!StringUtils.isEmpty(domainUser)){
+            proxyTransmitClientConfig.setLoginName(domainUser);
         }
+        if(!StringUtils.isEmpty(host)){
+            proxyHttpClientConfig.setHost(host);
+        }
+        if(!StringUtils.isEmpty(port)){
+            proxyHttpClientConfig.setPort(Integer.valueOf(port));
+        }
+
+        ProxyTransmitClient proxyTransmitClient = SpringConfigTool.getBean(ProxyTransmitClient.class);
+        try {
+            proxyTransmitClient.connect(proxyTransmitClientConfig.getHost(),proxyTransmitClientConfig.getPort());
+        } catch (Exception e) {
+            e.printStackTrace();
+            proxyTransmitClient.shutdown();
+        }
+        // 监控缓存
+//        timer.schedule(new TimerTask(){
+//            @Override
+//            public void run() {
+//                logger.info("Cache size == {}",Cache.size());
+//                for (MemoryPoolMXBean memoryPoolMXBean : ManagementFactory.getMemoryPoolMXBeans()) {
+//                    logger.info( " {} 总量: {} 使用的内存: {}", memoryPoolMXBean.getName(),memoryPoolMXBean.getUsage().getCommitted(),memoryPoolMXBean.getUsage().getUsed());
+//                }
+//            }
+//        },0,60000);
+
+    }
+
+    public static void shutdown(){
+        AnnotationConfigApplicationContext context = (AnnotationConfigApplicationContext)applicationContext;
+        context.close();
     }
 }

@@ -1,6 +1,7 @@
 #transmit server
 transmitServer:
   port: 5000
+  maxFrameLength: 5242880
   soBacklog: 128
   soSendBuf: 10240
   soRcvbuf: 102400
@@ -8,6 +9,7 @@ transmitServer:
 #proxyhttpserver
 proxyHttpServer:
   port: 9000
+  maxContentLength: 5242880
   soBacklog: 128
   soSendBuf: 10240
   soRcvbuf: 102400

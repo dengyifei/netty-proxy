@@ -15,7 +15,7 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 
 
 /**
- * 转发服务端用来接收用户端发来的数据并转发给转发客户端
+ * 转发服务端用来接收用户端发来的数据并转发给转发客户端,目前是当成4层tcp处理
  */
 @ChannelHandler.Sharable
 public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {

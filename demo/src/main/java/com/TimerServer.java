@@ -8,8 +8,11 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.concurrent.GenericFutureListener;
 
 import java.nio.Buffer;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class TimerServer {
 
@@ -17,6 +20,8 @@ public class TimerServer {
     public static void main(String[] args) {
         new TimerServer().start();
     }
+
+    private Channel channel;
 
 
     public void start(){
@@ -36,56 +41,76 @@ public class TimerServer {
 
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pip = ch.pipeline();
-                        System.out.println(this);
-                        pip.addLast(new ChannelInboundHandlerAdapter(){
-                            @Override
-                            public void channelActive(final ChannelHandlerContext ctx) { // (1)
-                                final ByteBuf time = ctx.alloc().buffer(4); // (2)
-                                time.writeInt((int) (System.currentTimeMillis() / 1000L + 2208988800L));
-                                final ChannelFuture f = ctx.writeAndFlush(time); // (3)
-                                f.addListener(new ChannelFutureListener() {
-                                    public void operationComplete(ChannelFuture future) {
-                                        assert f == future;
-                                        System.out.println("发送完成");
-                                        //ctx.close();
-                                    }
-                                }); // (4)
-                            }
-
-
-                            @Override
-                            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-                                cause.printStackTrace();
-                                ctx.close();
-                            }
-
-                            @Override
-                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                                ByteBuf in = (ByteBuf) msg;
-                                System.out.println(in.toString(CharsetUtil.US_ASCII));
-                                in.release();
-                                try{
-                                    while(in.isReadable()){//(1)
-                                        System.out.print((char) in.readByte());
-                                    }
-                                }finally {
-                                    //ReferenceCountUtil.release(msg);
-                                }
-
-                            }
-                        });
+                        System.out.println(this.getClass());
+//                        pip.addLast(new ChannelInboundHandlerAdapter(){
+//                            @Override
+//                            public void channelActive(final ChannelHandlerContext ctx) { // (1)
+//                                final ByteBuf time = ctx.alloc().buffer(4); // (2)
+//                                time.writeInt((int) (System.currentTimeMillis() / 1000L + 2208988800L));
+//                                final ChannelFuture f = ctx.writeAndFlush(time); // (3)
+//                                f.addListener(new ChannelFutureListener() {
+//                                    public void operationComplete(ChannelFuture future) {
+//                                        assert f == future;
+//                                        System.out.println("发送完成");
+//                                        //ctx.close();
+//                                    }
+//                                }); // (4)
+//                            }
+//
+//
+//                            @Override
+//                            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+//                                cause.printStackTrace();
+//                                ctx.close();
+//                            }
+//
+//                            @Override
+//                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+//                                ByteBuf in = (ByteBuf) msg;
+//                                System.out.println(in.toString(CharsetUtil.US_ASCII));
+//                                in.release();
+//                                try{
+//                                    while(in.isReadable()){//(1)
+//                                        System.out.print((char) in.readByte());
+//                                    }
+//                                }finally {
+//                                    //ReferenceCountUtil.release(msg);
+//                                }
+//
+//                            }
+//                        });
                     }
                 }
         );
         try {
             ChannelFuture f = bootstrap.bind(port).sync();
             System.out.println("TimeServer Started on 8080...");
-            f.channel().closeFuture().sync();
+            //f.channel().closeFuture().sync();
+            channel = f.channel();
+            f.channel().closeFuture().addListener(new GenericFutureListener<ChannelFuture>() {
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if (future.isSuccess()) {
+                        System.out.println(String.format("success stop server %s",port));
+                        work.shutdownGracefully();
+                        boss.shutdownGracefully();
+                    }
+                }
+            });
+            System.out.println("xxx");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            work.shutdownGracefully();
-            boss.shutdownGracefully();
+            System.out.println("xxx1");
+//            new Timer(true).schedule(new TimerTask(){
+//                @Override
+//                public void run() {
+//                    stop();
+//                }
+//            },1000*10);
         }
+    }
+
+    private void stop(){
+        channel.close();
     }
 }

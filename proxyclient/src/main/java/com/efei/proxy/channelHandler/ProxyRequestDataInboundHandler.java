@@ -71,14 +71,13 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
             try{
                 c = Cache.get(msg2.getKey());
                 if(c==null){
-                    c = (ProxyHttpClient)ClientFacetory.buildCacheProxyHttpClient(msg2.getKey(),2*60*1000);
+                    c = (ProxyHttpClient)ClientFacetory.buildCacheProxyHttpClient(msg2.getKey(),0);
                     c.setKey(msg2.getKey());
                     c.connect(proxyHttpClientConfig.getHost(),proxyHttpClientConfig.getPort());
                 }
             }finally {
                 lock.unlock();
             }
-
         }
         ByteBuf buf = Unpooled.buffer();
         buf.writeBytes(msg2.getContent());

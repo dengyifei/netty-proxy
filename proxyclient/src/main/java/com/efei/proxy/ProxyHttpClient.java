@@ -16,6 +16,8 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 与目标服务连接的客户端
@@ -25,10 +27,38 @@ public class ProxyHttpClient extends Client {
     private String key; //
 
     // 存放请求数据
-    private BlockingQueue<ByteBuf> basket = new LinkedBlockingQueue<ByteBuf>(10);
+    private BlockingQueue<ByteBuf> basket = new LinkedBlockingQueue<ByteBuf>(1);
 
-    private AttributeKey<Integer> numreadsKey = AttributeKey.valueOf("numreadsKey");
+    AtomicBoolean isRun = new AtomicBoolean(true);
 
+    //private AttributeKey<Integer> numreadsKey = AttributeKey.valueOf("numreadsKey");
+
+    private ChannelInboundHandlerAdapter proxyReponseDataInboundHandler = new ChannelInboundHandlerAdapter(){
+        @Override
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            byte[] content =null;
+            ByteBuf in = (ByteBuf) msg;
+            content = new byte[in.readableBytes()];
+            in.readBytes(content);
+            //System.out.println("xxx:"+content);
+            if(content!=null){
+                ProxyTcpProtocolBean b = new ProxyTcpProtocolBean((byte)1,(byte)2,key,content.length,content);
+                logger.debug(b.toStr());
+                //Client c = Cache.get(ProxyTransmitClient.class.getSimpleName());
+                Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
+                c.sendMsg(b.toByteBuf());
+                ReferenceCountUtil.release(msg);
+            } else {
+                ctx.fireChannelRead(msg);
+            }
+            //ReferenceCountUtil.release(msg);
+        }
+
+        @Override
+        public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+            super.channelReadComplete(ctx);
+        }
+    };
     @Override
     public ChannelInitializer<SocketChannel> getChannelInitializer() {
         return new ChannelInitializer<SocketChannel>() {
@@ -49,53 +79,36 @@ public class ProxyHttpClient extends Client {
 //                    }
 //                });
 
-                pip.addLast(new ChannelInboundHandlerAdapter(){
-                    @Override
-                    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                        byte[] content =null;
-                        ByteBuf in = (ByteBuf) msg;
-                        content = new byte[in.readableBytes()];
-                        in.readBytes(content);
-                        //System.out.println("xxx:"+content);
-                        if(content!=null){
-                            ProxyTcpProtocolBean b = new ProxyTcpProtocolBean((byte)1,(byte)2,key,content.length,content);
-                            logger.debug(b.toStr());
-                            //Client c = Cache.get(ProxyTransmitClient.class.getSimpleName());
-                            Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
-                            c.sendMsg(b.toByteBuf());
-                            ReferenceCountUtil.release(msg);
-                        } else {
-                            ctx.fireChannelRead(msg);
-                        }
-                        //ReferenceCountUtil.release(msg);
-                    }
-
-                    @Override
-                    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-                        super.channelReadComplete(ctx);
-                    }
-                });
+                pip.addLast(proxyReponseDataInboundHandler);
             }
         };
     }
 
     @Override
     public void onConnectSuccess() {
-        new Thread(()->{
-            while(true) {
+
+        Thread t1 = new Thread(()->{
+            while(isRun.get()) {
                 try {
-                    ByteBuf msg = this.basket.take();
-                    sendMsg(msg);
+                    //ByteBuf msg = this.basket.take();
+                    ByteBuf msg = this.basket.poll(60, TimeUnit.SECONDS);
+                    if(msg!=null){
+                        sendMsg(msg);
+                    }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-        }).start();
+        });
+        t1.setName("sendQueueData");
+        t1.start();
     }
 
     @Override
     public void onClosed() {
-       Cache.remove(key);
+        isRun.set(false); // 停止发数据线程
+        Client c = Cache.remove(key);
+        logger.info(c.getChannel() + "cache removed");
     }
 
     @Override
@@ -114,4 +127,6 @@ public class ProxyHttpClient extends Client {
     public void setKey(String key) {
         this.key = key;
     }
+
+
 }
