@@ -2,8 +2,9 @@ package com.efei.proxy;
 
 import com.efei.proxy.common.cache.Cache;
 import com.efei.proxy.common.util.SpringConfigTool;
-import com.efei.proxy.config.ClientConfig;
 import com.efei.proxy.config.ProxyConfig;
+import com.efei.proxy.event.ReConnectEventPublisher;
+import com.efei.proxy.event.ReConnectEvent;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,9 @@ public class ProxyMainClient {
     @Autowired
     private Timer timer;
 
+    @Autowired
+    private ReConnectEventPublisher eventPublisher;
+
     public static void main(String[] args) {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("com.efei.proxy");
         applicationContext = context;
@@ -85,12 +89,8 @@ public class ProxyMainClient {
         }
 
         ProxyTransmitClient proxyTransmitClient = SpringConfigTool.getBean(ProxyTransmitClient.class);
-        try {
-            proxyTransmitClient.connect(proxyTransmitClientConfig.getHost(),proxyTransmitClientConfig.getPort());
-        } catch (Exception e) {
-            e.printStackTrace();
-            proxyTransmitClient.shutdown();
-        }
+        proxyTransmitClient.bulidBootstrap();
+        connect();
         // 监控缓存
 //        timer.schedule(new TimerTask(){
 //            @Override
@@ -102,6 +102,17 @@ public class ProxyMainClient {
 //            }
 //        },0,60000);
 
+    }
+    public void connect()  {
+        ProxyTransmitClient proxyTransmitClient = SpringConfigTool.getBean(ProxyTransmitClient.class);
+        try {
+            proxyTransmitClient.connect(proxyTransmitClientConfig.getHost(),proxyTransmitClientConfig.getPort());
+        } catch (Exception e) {
+            //e.printStackTrace();
+            System.out.println("xxx");
+            logger.error("连接失败",e);
+            eventPublisher.publish(new ReConnectEvent("reConnect",1,1000,0));
+        }
     }
 
     public static void shutdown(){

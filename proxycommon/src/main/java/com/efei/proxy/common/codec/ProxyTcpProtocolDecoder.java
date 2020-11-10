@@ -17,12 +17,12 @@ public class ProxyTcpProtocolDecoder extends LengthFieldBasedFrameDecoder {
     private static final int LENGTH_ADJUSTMENT = 0;
     private static final int INITIAL_BYTES_TO_STRIP = 0;
 
-    private static ProxyTcpProtocolDecoder self = null;
+    //private static ProxyTcpProtocolDecoder self = null;
 
     public static synchronized ProxyTcpProtocolDecoder getSelf() {
-        if(self==null){
-            self = new ProxyTcpProtocolDecoder(MAX_FRAME_LENGTH,LENGTH_FIELD_OFFSET,LENGTH_FIELD_LENGTH,LENGTH_ADJUSTMENT,INITIAL_BYTES_TO_STRIP,false);
-        }
+        //if(self==null){
+        ProxyTcpProtocolDecoder  self = new ProxyTcpProtocolDecoder(MAX_FRAME_LENGTH,LENGTH_FIELD_OFFSET,LENGTH_FIELD_LENGTH,LENGTH_ADJUSTMENT,INITIAL_BYTES_TO_STRIP,false);
+        //}
         return self;
     }
 

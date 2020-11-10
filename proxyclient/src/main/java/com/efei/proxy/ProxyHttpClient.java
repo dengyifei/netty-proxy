@@ -8,6 +8,7 @@ import com.efei.proxy.config.ClientConfig;
 import com.efei.proxy.config.ProxyConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
@@ -27,7 +28,7 @@ public class ProxyHttpClient extends Client {
     private String key; //
 
     // 存放请求数据
-    private BlockingQueue<ByteBuf> basket = new LinkedBlockingQueue<ByteBuf>(1);
+    private BlockingQueue<ByteBuf> basket = new LinkedBlockingQueue<ByteBuf>(3);
 
     AtomicBoolean isRun = new AtomicBoolean(true);
 

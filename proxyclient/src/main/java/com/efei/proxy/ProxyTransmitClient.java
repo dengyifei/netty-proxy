@@ -11,6 +11,7 @@ import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ClientConfig;
 import com.efei.proxy.config.ProxyConfig;
 import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.logging.InternalLogger;
@@ -72,8 +73,7 @@ public class ProxyTransmitClient extends Client {
     public ClientConfig getClientConfig() {
         return proxyTransmitClientConfig;
     }
-
-//    public static void start(String[] args) throws InterruptedException {
+    //    public static void start(String[] args) throws InterruptedException {
 //        ProxyTransmitClient c = new ProxyTransmitClient();
 //        c.connect("127.0.0.1",5000);
 //        Cache.put(c.getClass().getSimpleName(),c);

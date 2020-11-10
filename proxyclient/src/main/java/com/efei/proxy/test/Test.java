@@ -12,6 +12,30 @@ public class Test {
 
     }
     public static void main(String[] args) {
-        new Test().testMathUtil();
+        // new Test().testMathUtil();
+//        TaskRunner t = new TaskRunner();
+//        t.start();
+//        t.cancel();
+//        System.out.println("222");
     }
+
+
 }
+
+//class TaskRunner extends Thread {
+//
+//    @Override
+//    public void run() {
+//        while (true){
+//            System.out.println("xxx");
+//            Thread.sleep(5000);
+//        }
+//
+//    }
+//
+//    public void cancel() {
+//        interrupt();
+//    }
+//
+//
+//}

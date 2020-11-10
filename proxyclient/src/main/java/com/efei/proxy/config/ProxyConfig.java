@@ -53,6 +53,12 @@ public class ProxyConfig {
         @Value("${proxyHttpClient.port}")
         int port;
 
+        @Value("${proxyHttpClient.connectTimeout:5000}")
+        int connectTimeout;
+
+        @Value("${proxyHttpClient.nThreads:5}")
+        int nThreads;
+
         @Override
         public int getSoBacklog() {
             return soBacklog;
@@ -88,6 +94,13 @@ public class ProxyConfig {
         public void setPort(int port) {
             this.port = port;
         }
+        public int getConnectTimeout() {
+            return connectTimeout;
+        }
+
+        public int getNthreads() {
+            return nThreads;
+        }
     }
 
     @Component
@@ -113,6 +126,12 @@ public class ProxyConfig {
 
         @Value("${proxyTransmitClient.loginName}")
         String loginName;
+
+        @Value("${proxyTransmitClient.connectTimeout:5000}")
+        int connectTimeout;
+
+        @Value("${proxyTransmitClient.nThreads:5}")
+        int nThreads;
 
         @Override
         public int getSoBacklog() {
@@ -148,6 +167,13 @@ public class ProxyConfig {
 
         public void setLoginName(String loginName) {
             this.loginName = loginName;
+        }
+
+        public int getConnectTimeout() {
+            return connectTimeout;
+        }
+        public int getNthreads() {
+            return nThreads;
         }
     }
 }
