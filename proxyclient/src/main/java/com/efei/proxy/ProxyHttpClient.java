@@ -9,9 +9,7 @@ import com.efei.proxy.config.ClientConfig;
 import com.efei.proxy.config.ProxyConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
@@ -47,7 +45,7 @@ public class ProxyHttpClient extends Client {
                 ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_HTTPPACKAGE,Constant.MSG_PRP,key,content.length,content);
                 logger.debug(b.toStr());
                 //Client c = Cache.get(ProxyTransmitClient.class.getSimpleName());
-                Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
+                Client c = SpringConfigTool.getBean(ProxyTransmitClient2.class);
                 c.sendMsg(b.toByteBuf());
                 ReferenceCountUtil.release(msg);
             } else {

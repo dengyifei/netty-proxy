@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.cache.Cache;
-import com.efei.proxy.common.util.MathUtil;
 import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ClientConfig;
 import com.efei.proxy.config.ProxyConfig;
@@ -44,7 +43,7 @@ public class ProxyTcpClient extends Client {
                 ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_TCPPACKAGE,Constant.MSG_PRP,key,content.length,content);
                 logger.debug(b.toStr());
                 //Client c = Cache.get(ProxyTransmitClient.class.getSimpleName());
-                Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
+                Client c = SpringConfigTool.getBean(ProxyTransmitClient2.class);
                 c.sendMsg(b.toByteBuf());
                 ReferenceCountUtil.release(msg);
             } else {
@@ -98,7 +97,7 @@ public class ProxyTcpClient extends Client {
         String reponse = jo.toJSONString();
         byte[] content = reponse.getBytes(CharsetUtil.UTF_8);
         ProxyTcpProtocolBean reponseMsg = new ProxyTcpProtocolBean(Constant.MSG_CONNECT,Constant.MSG_PRP,key,content.length,content);
-        Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
+        Client c = SpringConfigTool.getBean(ProxyTransmitClient2.class);
         c.sendMsg(reponseMsg.toByteBuf());
     }
 
@@ -110,7 +109,7 @@ public class ProxyTcpClient extends Client {
         String reponse = jo.toJSONString();
         byte[] content = reponse.getBytes(CharsetUtil.UTF_8);
         ProxyTcpProtocolBean reponseMsg = new ProxyTcpProtocolBean(Constant.MSG_CONNECT,Constant.MSG_PRP,key,content.length,content);
-        Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
+        Client c = SpringConfigTool.getBean(ProxyTransmitClient2.class);
         c.sendMsg(reponseMsg.toByteBuf());
     }
 

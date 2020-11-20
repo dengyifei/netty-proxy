@@ -1,6 +1,7 @@
 proxyTransmitClient:
-  host: 127.0.0.1
+  #host: 127.0.0.1
   #host: 3.0.19.139
+  host: 47.97.19.179
   port: 5000
   loginName: efei
   soBacklog: 128

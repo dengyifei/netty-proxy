@@ -5,7 +5,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class ReConnectEventPublisher<C extends ApplicationEvent> implements ApplicationEventPublisherAware {
 
     private ApplicationEventPublisher applicationEventPublisher;

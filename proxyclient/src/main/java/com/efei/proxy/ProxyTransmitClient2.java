@@ -22,9 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ProxyTransmitClient extends Client {
+public class ProxyTransmitClient2 extends Client {
 
-    private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyTransmitClient.class);
+    private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyTransmitClient2.class);
     //private ProxyTcpProtocolDecoder proxyTcpDecoder = ProxyTcpProtocolDecoder.getSelf();
 
 

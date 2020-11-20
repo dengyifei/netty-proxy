@@ -1,10 +1,7 @@
 package com.efei.proxy;
 
-import com.efei.proxy.common.cache.Cache;
 import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ProxyConfig;
-import com.efei.proxy.event.ReConnectEventPublisher;
-import com.efei.proxy.event.ReConnectEvent;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.util.StringUtils;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
 import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * -server -Xms500m -Xmx500m -XX:NewRatio=5 -XX:SurvivorRatio=8 -XX:+PrintGCDateStamps -XX:+PrintGCDetails -Xloggc:log/gc.log -XX:+UseConcMarkSweepGC -DdomainUser=xefei -Dhost=127.0.0.1 -Dport=8788
@@ -58,8 +52,8 @@ public class ProxyMainClient {
     @Autowired
     private Timer timer;
 
-    @Autowired
-    private ReConnectEventPublisher eventPublisher;
+//    @Autowired
+//    private ReConnectEventPublisher eventPublisher;
 
     public static void main(String[] args) {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("com.efei.proxy");
@@ -88,7 +82,7 @@ public class ProxyMainClient {
             proxyHttpClientConfig.setPort(Integer.valueOf(port));
         }
 
-        ProxyTransmitClient proxyTransmitClient = SpringConfigTool.getBean(ProxyTransmitClient.class);
+        ProxyTransmitClient2 proxyTransmitClient = SpringConfigTool.getBean(ProxyTransmitClient2.class);
         proxyTransmitClient.bulidBootstrap();
         proxyTransmitClient.doConnect(proxyTransmitClientConfig.getHost(),proxyTransmitClientConfig.getPort());
         // 监控缓存

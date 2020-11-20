@@ -33,7 +33,7 @@ public class ProxyConfig {
     }
 
     @Component
-    public final static class ProxyTcpClientConfig extends ClientConfig{
+    public static class ProxyTcpClientConfig extends ClientConfig{
         @Value("${proxyHttpClient.soBacklog}")
         int soBacklog;
 
@@ -81,7 +81,7 @@ public class ProxyConfig {
     }
 
     @Component
-    public final static class ProxyHttpClientConfig extends ClientConfig{
+    public  static class ProxyHttpClientConfig extends ClientConfig{
 
         @Value("${proxyHttpClient.soBacklog}")
         int soBacklog;
@@ -152,7 +152,7 @@ public class ProxyConfig {
     }
 
     @Component
-    public final static class  ProxyTransmitClientConfig extends ClientConfig{
+    public static class  ProxyTransmitClientConfig extends ClientConfig{
 
         @Value("${proxyTransmitClient.host}")
         String host;

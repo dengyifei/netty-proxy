@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.*;
 
-@Component
+//@Component
 public class ReConnectEventListener extends RetryTemplate implements ApplicationListener<ReConnectEvent>  {
     private static InternalLogger logger = InternalLoggerFactory.getInstance(ReConnectEventListener.class);
 
