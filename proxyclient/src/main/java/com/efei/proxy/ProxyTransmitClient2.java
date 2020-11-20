@@ -3,17 +3,16 @@ package com.efei.proxy;
 import com.Client;
 import com.alibaba.fastjson.JSONObject;
 import com.efei.proxy.channelHandler.HeartBeatClientHandler;
+import com.efei.proxy.channelHandler.ProxyRequestDataInboundHandler;
 import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
-import com.efei.proxy.common.cache.Cache;
-import com.efei.proxy.channelHandler.ProxyRequestDataInboundHandler;
 import com.efei.proxy.common.codec.ProxyTcpProtocolDecoder;
 import com.efei.proxy.common.util.MathUtil;
 import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ClientConfig;
 import com.efei.proxy.config.ProxyConfig;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
@@ -22,10 +21,6 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/**
- * 传输数据客户端。
- *  与服务端建立连接channel用来传输数据。此channel我们叫 TransmitChannel
- */
 @Component
 public class ProxyTransmitClient extends Client {
 
