@@ -1,5 +1,6 @@
 package com.efei.proxy.channelHandler;
 
+import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.cache.Cache;
 import com.efei.proxy.common.util.MathUtil;
 import io.netty.buffer.Unpooled;
@@ -20,16 +21,13 @@ import org.springframework.stereotype.Component;
 public class ProxyRequestHttpDataHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyRequestHttpDataHandler.class);
-
-    private AttributeKey<String> userchannelkey = AttributeKey.valueOf("key");
-
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         logger.info(ctx.channel() + "创建连接");
-        String key = ctx.attr(userchannelkey).get();
+        String key = ctx.attr(Constant.KEY_USERCHANNEL).get();
         if(key == null){
             key = MathUtil.getRandomString(6);
-            ctx.channel().attr(userchannelkey).set(key);
+            ctx.channel().attr(Constant.KEY_USERCHANNEL).set(key);
             Cache.put(key,ctx.channel());
         }
     }
@@ -58,7 +56,7 @@ public class ProxyRequestHttpDataHandler extends SimpleChannelInboundHandler<Ful
     private void transmitByDoamin(ChannelHandlerContext ctx, FullHttpRequest req,String host){
         String domain1= host.substring(0,host.indexOf("."));
         Channel c = Cache.get(domain1);
-        String key = ctx.attr(userchannelkey).get();
+        String key = ctx.attr(Constant.KEY_USERCHANNEL).get();
         req.headers().set("key",key);
         //req.duplicate();
         //FullHttpRequest req2 = req.copy();

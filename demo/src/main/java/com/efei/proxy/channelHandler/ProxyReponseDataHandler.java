@@ -1,5 +1,6 @@
 package com.efei.proxy.channelHandler;
 
+import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.cache.Cache;
 import io.netty.buffer.ByteBuf;
@@ -10,19 +11,21 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * 响应数据到用户channel
  */
+@Component
 @ChannelHandler.Sharable
 public class ProxyReponseDataHandler extends ChannelInboundHandlerAdapter {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyReponseDataHandler.class);
     private static ProxyReponseDataHandler self = null;
 
-    public synchronized  static ProxyReponseDataHandler getSelf(){
-        return self == null ? self = new ProxyReponseDataHandler() : self;
-    }
+//    public synchronized  static ProxyReponseDataHandler getSelf(){
+//        return self == null ? self = new ProxyReponseDataHandler() : self;
+//    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, final Object msg) throws Exception {
@@ -31,9 +34,18 @@ public class ProxyReponseDataHandler extends ChannelInboundHandlerAdapter {
             super.channelRead(ctx, msg);
         }
         ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean)msg;
-        if(msg2.getType() == 1){
+        if(msg2.getType() == Constant.MSG_HTTPPACKAGE){
             transmitToUserChannel(ctx,msg2);
             // return;
+        } else if(msg2.getType() == Constant.MSG_TCPPACKAGE){
+            transmitToUserChannel(ctx,msg2);
+        }
+        else if(msg2.getType() == Constant.MSG_CONNECT) {
+            // 标志客户端与和目标服务端已经连接已经连接
+            logger.debug(msg2.toStr());
+            String key = msg2.getKey();
+            Channel userChannel = Cache.get(key);
+            userChannel.attr(Constant.KEY_CONNECT).set(Boolean.TRUE);
         }
     }
 

@@ -7,9 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.*;
+
 @Component
 public class ReConnectEventListener extends RetryTemplate implements ApplicationListener<ReConnectEvent>  {
     private static InternalLogger logger = InternalLoggerFactory.getInstance(ReConnectEventListener.class);
+
+//    ExecutorService executorService = new ThreadPoolExecutor(3, 5,
+//            1, TimeUnit.MINUTES,
+//            new LinkedBlockingQueue<Runnable>());
+    public final static ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     @Autowired
     private ProxyMainClient proxyMainClient;
@@ -25,8 +32,6 @@ public class ReConnectEventListener extends RetryTemplate implements Application
 
     @Override
     public Object doService() throws Exception{
-        logger.warn("正在重新连接...");
-        proxyMainClient.connect();
         return null;
     }
 }

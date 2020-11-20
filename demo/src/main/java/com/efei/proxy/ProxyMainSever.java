@@ -78,6 +78,8 @@ public class ProxyMainSever {
         },"PorxyHttpServer").start();
 
         // TCP转发服务
+        ProxyTcpServerManager proxyTcpServerManager = applicationContext.getBean(ProxyTcpServerManager.class);
+        proxyTcpServerManager.start();
 
     }
 

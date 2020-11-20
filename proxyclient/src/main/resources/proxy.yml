@@ -7,6 +7,8 @@ proxyTransmitClient:
   soSendBuf: 10240
   soRcvbuf: 102400
   tcpNodeLay: true
+  nThreads: 3
+  connectTimeout: 5000
 proxyHttpClient:
   # 目标服务
   host: 127.0.0.1
@@ -16,3 +18,12 @@ proxyHttpClient:
   soSendBuf: 10240
   soRcvbuf: 102400
   tcpNodeLay: true
+  nThreads: 2
+  connectTimeout: 5000
+proxyTcpClient:
+  soBacklog: 128
+  soSendBuf: 10240
+  soRcvbuf: 102400
+  tcpNodeLay: true
+  nThreads: 2
+  connectTimeout: 5000

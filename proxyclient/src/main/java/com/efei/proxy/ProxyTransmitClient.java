@@ -2,6 +2,8 @@ package com.efei.proxy;
 
 import com.Client;
 import com.alibaba.fastjson.JSONObject;
+import com.efei.proxy.channelHandler.HeartBeatClientHandler;
+import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.cache.Cache;
 import com.efei.proxy.channelHandler.ProxyRequestDataInboundHandler;
@@ -13,6 +15,7 @@ import com.efei.proxy.config.ProxyConfig;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
@@ -39,8 +42,10 @@ public class ProxyTransmitClient extends Client {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pip = ch.pipeline();
-                pip.addLast("decode", ProxyTcpProtocolDecoder.getSelf()); // 解析出对象
-                pip.addLast("handler", SpringConfigTool.getBean(ProxyRequestDataInboundHandler.class)); // 处理对象
+                pip.addLast(new IdleStateHandler(10,7,0));
+                pip.addLast(SpringConfigTool.getBean(HeartBeatClientHandler.class));
+                pip.addLast(ProxyTcpProtocolDecoder.getSelf()); // 解析出对象
+                pip.addLast(SpringConfigTool.getBean(ProxyRequestDataInboundHandler.class)); // 处理对象
 
 //                pip.addLast("encode",new ChannelOutboundHandlerAdapter(){
 //                    @Override
@@ -60,13 +65,13 @@ public class ProxyTransmitClient extends Client {
         String loginStr = jo.toJSONString();
         byte[] content = loginStr.getBytes(CharsetUtil.UTF_8);
         String key = MathUtil.getRandomString(6);
-        ProxyTcpProtocolBean loginMsg = new ProxyTcpProtocolBean((byte)2,(byte)1,key,content.length,content);
+        ProxyTcpProtocolBean loginMsg = new ProxyTcpProtocolBean(Constant.MSG_LOGIN,Constant.MSG_RQ,key,content.length,content);
         sendMsg(loginMsg.toByteBuf());
     }
 
     @Override
     public void onClosed() {
-
+        super.onClosed();
     }
 
     @Override

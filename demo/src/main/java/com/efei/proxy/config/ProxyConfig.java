@@ -1,11 +1,11 @@
 package com.efei.proxy.config;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
+import com.efei.proxy.ProxyTcpServerManager;
+import com.efei.proxy.common.bean.ProxyTcpServerConfigBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.YamlMapFactoryBean;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
@@ -31,6 +31,21 @@ public class ProxyConfig {
         Properties p = yaml.getObject();
         propertySourcesPlaceholderConfigurer.setProperties(yaml.getObject());
         return propertySourcesPlaceholderConfigurer;
+    }
+
+    @Bean
+    public ProxyTcpServerManager getServerPort2RealServer() {
+        ProxyTcpServerManager proxyTcpServerManager = new ProxyTcpServerManager();
+        YamlMapFactoryBean yaml = new YamlMapFactoryBean();
+        yaml.setResources(new ClassPathResource(config_file));
+        Map<String, Object> m = yaml.getObject();
+        List<Map<String,Object>> m2 = new ArrayList<Map<String,Object>>();
+        List<Map<String,Object>> proxy = (List<Map<String,Object>>) m.getOrDefault("proxyTcpServer", m2);
+        String str = JSON.toJSONString(proxy);
+        System.out.println(str);
+        List<ProxyTcpServerConfigBean> proxy2 = JSON.parseArray(str,ProxyTcpServerConfigBean.class);
+        proxyTcpServerManager.setListProxyTcpServerConfigBean(proxy2);
+        return proxyTcpServerManager;
     }
 
 
@@ -120,6 +135,44 @@ public class ProxyConfig {
 
         public boolean isTcpNodeLay() {
             return tcpNodeLay;
+        }
+    }
+
+    public static class ProxyTcpServerConfig extends ServerConfig{
+
+        private ProxyTcpServerConfigBean proxyTcpServerConfigBean;
+
+        public ProxyTcpServerConfig(ProxyTcpServerConfigBean proxyTcpServerConfigBean) {
+            this.proxyTcpServerConfigBean = proxyTcpServerConfigBean;
+        }
+
+        @Override
+        public int getPort() {
+            return proxyTcpServerConfigBean.getPort();
+        }
+
+        @Override
+        public int getSoBacklog() {
+            return proxyTcpServerConfigBean.getSoBacklog();
+        }
+
+        @Override
+        public int getSoSendBuf() {
+            return proxyTcpServerConfigBean.getSoSendBuf();
+        }
+
+        @Override
+        public int getSoRcvbuf() {
+            return proxyTcpServerConfigBean.getSoRcvbuf();
+        }
+
+        @Override
+        public boolean isTcpNodeLay() {
+            return proxyTcpServerConfigBean.getTcpNodeLay();
+        }
+
+        public ProxyTcpServerConfigBean getProxyTcpServerConfigBean() {
+            return proxyTcpServerConfigBean;
         }
     }
 

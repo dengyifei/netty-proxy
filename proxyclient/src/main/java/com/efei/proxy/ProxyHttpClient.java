@@ -1,6 +1,7 @@
 package com.efei.proxy;
 
 import com.Client;
+import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.cache.Cache;
 import com.efei.proxy.common.util.SpringConfigTool;
@@ -43,7 +44,7 @@ public class ProxyHttpClient extends Client {
             in.readBytes(content);
             //System.out.println("xxx:"+content);
             if(content!=null){
-                ProxyTcpProtocolBean b = new ProxyTcpProtocolBean((byte)1,(byte)2,key,content.length,content);
+                ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_HTTPPACKAGE,Constant.MSG_PRP,key,content.length,content);
                 logger.debug(b.toStr());
                 //Client c = Cache.get(ProxyTransmitClient.class.getSimpleName());
                 Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
@@ -128,6 +129,4 @@ public class ProxyHttpClient extends Client {
     public void setKey(String key) {
         this.key = key;
     }
-
-
 }

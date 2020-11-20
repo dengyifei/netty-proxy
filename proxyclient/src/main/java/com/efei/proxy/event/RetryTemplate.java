@@ -1,5 +1,7 @@
 package com.efei.proxy.event;
 
+import java.util.concurrent.ExecutorService;
+
 public abstract  class RetryTemplate {
 
     public abstract Object doService() throws Exception;
@@ -40,7 +42,6 @@ public abstract  class RetryTemplate {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
         for(int i=0;i<count;i++){
             try{
                 return doService();
@@ -52,6 +53,11 @@ public abstract  class RetryTemplate {
                 }
             }
         }
+        return null;
+    }
+
+    public Object submit(ExecutorService executorService){
+        //executorService.submit()
         return null;
     }
 }

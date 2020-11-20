@@ -90,7 +90,7 @@ public class ProxyMainClient {
 
         ProxyTransmitClient proxyTransmitClient = SpringConfigTool.getBean(ProxyTransmitClient.class);
         proxyTransmitClient.bulidBootstrap();
-        connect();
+        proxyTransmitClient.doConnect(proxyTransmitClientConfig.getHost(),proxyTransmitClientConfig.getPort());
         // 监控缓存
 //        timer.schedule(new TimerTask(){
 //            @Override
@@ -102,17 +102,6 @@ public class ProxyMainClient {
 //            }
 //        },0,60000);
 
-    }
-    public void connect()  {
-        ProxyTransmitClient proxyTransmitClient = SpringConfigTool.getBean(ProxyTransmitClient.class);
-        try {
-            proxyTransmitClient.connect(proxyTransmitClientConfig.getHost(),proxyTransmitClientConfig.getPort());
-        } catch (Exception e) {
-            //e.printStackTrace();
-            System.out.println("xxx");
-            logger.error("连接失败",e);
-            eventPublisher.publish(new ReConnectEvent("reConnect",1,1000,0));
-        }
     }
 
     public static void shutdown(){

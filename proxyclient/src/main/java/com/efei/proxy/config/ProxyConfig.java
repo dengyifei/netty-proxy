@@ -33,6 +33,54 @@ public class ProxyConfig {
     }
 
     @Component
+    public final static class ProxyTcpClientConfig extends ClientConfig{
+        @Value("${proxyHttpClient.soBacklog}")
+        int soBacklog;
+
+        @Value("${proxyHttpClient.soSendBuf}")
+        int soSendBuf;
+
+        @Value("${proxyHttpClient.soRcvbuf}")
+        int soRcvbuf;
+
+        @Value("${proxyHttpClient.tcpNodeLay}")
+        boolean tcpNodeLay;
+
+        @Value("${proxyHttpClient.connectTimeout:5000}")
+        int connectTimeout;
+
+        @Value("${proxyHttpClient.nThreads:5}")
+        int nThreads;
+
+        @Override
+        public int getSoBacklog() {
+            return soBacklog;
+        }
+
+        @Override
+        public int getSoSendBuf() {
+            return soSendBuf;
+        }
+
+        @Override
+        public int getSoRcvbuf() {
+            return soRcvbuf;
+        }
+
+        @Override
+        public boolean isTcpNodeLay() {
+            return tcpNodeLay;
+        }
+        public int getConnectTimeout() {
+            return connectTimeout;
+        }
+
+        public int getNthreads() {
+            return nThreads;
+        }
+    }
+
+    @Component
     public final static class ProxyHttpClientConfig extends ClientConfig{
 
         @Value("${proxyHttpClient.soBacklog}")

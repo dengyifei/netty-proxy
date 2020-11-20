@@ -42,9 +42,10 @@ public class TimerServer {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pip = ch.pipeline();
                         System.out.println(this.getClass());
-//                        pip.addLast(new ChannelInboundHandlerAdapter(){
-//                            @Override
-//                            public void channelActive(final ChannelHandlerContext ctx) { // (1)
+                        pip.addLast(new ChannelInboundHandlerAdapter(){
+                            @Override
+                            public void channelActive(final ChannelHandlerContext ctx) { // (1)
+                                System.out.println(ctx.channel() + " channelActive");
 //                                final ByteBuf time = ctx.alloc().buffer(4); // (2)
 //                                time.writeInt((int) (System.currentTimeMillis() / 1000L + 2208988800L));
 //                                final ChannelFuture f = ctx.writeAndFlush(time); // (3)
@@ -55,8 +56,21 @@ public class TimerServer {
 //                                        //ctx.close();
 //                                    }
 //                                }); // (4)
-//                            }
-//
+                            }
+
+                            @Override
+                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                                ByteBuf buf = (ByteBuf)msg;
+                                if(buf.isReadable()){
+                                    int i = buf.readableBytes();
+                                    byte[] dts = new byte[i];
+                                    buf.readBytes(i);
+                                    String s = new String(dts);
+                                    System.out.println(s);
+                                }
+                            }
+
+                            //
 //
 //                            @Override
 //                            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
@@ -78,13 +92,13 @@ public class TimerServer {
 //                                }
 //
 //                            }
-//                        });
+                        });
                     }
                 }
         );
         try {
             ChannelFuture f = bootstrap.bind(port).sync();
-            System.out.println("TimeServer Started on 8080...");
+            System.out.println("TimeServer Started on 9090...");
             //f.channel().closeFuture().sync();
             channel = f.channel();
             f.channel().closeFuture().addListener(new GenericFutureListener<ChannelFuture>() {

@@ -1,5 +1,6 @@
 package com.efei.proxy.common.codec;
 
+import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
@@ -21,7 +22,6 @@ import java.util.List;
 @ChannelHandler.Sharable
 public class HttpRequestTransmitEncoder extends HttpRequestEncoder {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(HttpRequestTransmitEncoder.class);
-
     @Override
     protected void encode(ChannelHandlerContext ctx, Object msg, List<Object> out) throws Exception {
         super.encode(ctx, msg, out);
@@ -33,7 +33,7 @@ public class HttpRequestTransmitEncoder extends HttpRequestEncoder {
                     ByteBuf in = (ByteBuf) out.get(i);
                     byte[] content = new byte[in.readableBytes()];
                     in.readBytes(content);
-                    ProxyTcpProtocolBean b = new ProxyTcpProtocolBean((byte)1,(byte)1,key,content.length,content);
+                    ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_HTTPPACKAGE,Constant.MSG_PRQ,key,content.length,content);
                     logger.debug(b.toStr());
                     ByteBuf buf = ctx.alloc().buffer();
                     b.toByteBuf(buf);
@@ -42,7 +42,5 @@ public class HttpRequestTransmitEncoder extends HttpRequestEncoder {
                 }
             }
         }
-
-
     }
 }

@@ -2,14 +2,21 @@ package com;
 
 import com.efei.proxy.config.ClientConfig;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.util.internal.logging.InternalLogger;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 public abstract class Client {
+    private static InternalLogger logger = InternalLoggerFactory.getInstance(Client.class);
+
     public abstract ChannelInitializer<SocketChannel> getChannelInitializer();
 
     public abstract ClientConfig getClientConfig();
@@ -28,18 +35,31 @@ public abstract class Client {
 
     public void onConnectFail(){
         //System.exit(1);
+        // 重连接
+        if(work!=null){
+            work.schedule(()->{
+                doConnect(host,port);
+            },1, TimeUnit.SECONDS);
+        }
     };
 
     public void onClosed(){
-
+        if(work!=null){
+            work.schedule(()->{
+                doConnect(host,port);
+            },1, TimeUnit.SECONDS);
+        }
     }
     private Channel channel = null;
+    ChannelFuture clientChannelFuture;
 
     public Bootstrap bulidBootstrap(){
         work = new NioEventLoopGroup(getClientConfig().getNthreads());
         boot = new Bootstrap();
         boot.channel(NioSocketChannel.class)
                 .handler(getChannelInitializer())
+                // .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                // .option(ChannelOption.RCVBUF_ALLOCATOR, AdaptiveRecvByteBufAllocator.DEFAULT)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.SO_SNDBUF, getClientConfig().getSoSendBuf())
                 .option(ChannelOption.SO_RCVBUF, getClientConfig().getSoRcvbuf())
@@ -49,7 +69,10 @@ public abstract class Client {
         return boot;
     }
 
-    public void connect(final String host, final int port) throws InterruptedException {
+    public void doConnect(final String host, final int port) {
+        if (channel != null && channel.isActive()) {
+            return;
+        }
         this.host = host;
         this.port = port;
 //        work = new NioEventLoopGroup(getClientConfig().getNthreads());
@@ -62,17 +85,19 @@ public abstract class Client {
 //                .option(ChannelOption.TCP_NODELAY,getClientConfig().isTcpNodeLay())
 //                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,getClientConfig().getConnectTimeout())
 //                .group(work)
-        ChannelFuture f = boot.connect(host, port).sync();//直到连接返回，才会退出当前线程
-        channel = f.channel();
-        f.addListener(new GenericFutureListener<ChannelFuture>() {
+        //ChannelFuture clientChannelFuture = boot.connect(host, port).sync();//直到连接返回，才会退出当前线程
+        clientChannelFuture = boot.connect(host, port);//直到连接返回，才会退出当前线程
+
+        clientChannelFuture.addListener(new GenericFutureListener<ChannelFuture>() {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    System.out.println(String.format("success connect %s %s", host, port));
+                    logger.info(String.format("success connect %s %s", host, port));
+                    channel = clientChannelFuture.channel();
                     isConnected = true;
-                    //addCloseFuture();
+                    addCloseFuture();
                     onConnectSuccess();
                 } else {
-                    System.out.println(String.format("fail connect %s %s", host, port));
+                    logger.info(String.format("fail connect %s %s", host, port));
                     onConnectFail();
                 }
 //                if(future.isCancelled()){
@@ -86,18 +111,18 @@ public abstract class Client {
 //                }
             }
         });
-        f.channel().closeFuture().addListener(new GenericFutureListener<ChannelFuture>() {
-            public void operationComplete(ChannelFuture future) throws Exception {
-                System.out.println(String.format(Thread.currentThread().getName() + " over connect %s %s", host, port));
-                if (future.isSuccess()) {
-                    //addCloseFuture();
-                    System.out.println(channel+"is closed");
-                    work.shutdownGracefully();
-                    isConnected = false;
-                    onClosed();
-                }
-            }
-        });
+//        clientChannelFuture.channel().closeFuture().addListener(new GenericFutureListener<ChannelFuture>() {
+//            public void operationComplete(ChannelFuture future) throws Exception {
+//                System.out.println(String.format(Thread.currentThread().getName() + " over connect %s %s", host, port));
+//                if (future.isSuccess()) {
+//                    //addCloseFuture();
+//                    System.out.println(channel+"is closed");
+//                    work.shutdownGracefully();
+//                    isConnected = false;
+//                    onClosed();
+//                }
+//            }
+//        });
 //        f.sync();
 //        System.out.println("xxxx");
 //        f.channel().closeFuture().addListener(new GenericFutureListener<ChannelFuture>() {
@@ -123,19 +148,19 @@ public abstract class Client {
         }
     }
 
-//    public void addCloseFuture(){
-//        this.channel.closeFuture().addListener(new GenericFutureListener<ChannelFuture>() {
-//            public void operationComplete(ChannelFuture future) throws Exception {
-//                System.out.println(String.format(Thread.currentThread().getName() + " over connect %s %s", host, port));
-//                if (future.isSuccess()) {
-//                    System.out.println(channel+"is closed");
-//                    work.shutdownGracefully();
-//                    isConnected = false;
-//                    onClosed();
-//                }
-//            }
-//        });
-//    }
+    private void addCloseFuture(){
+        this.channel.closeFuture().addListener(new GenericFutureListener<ChannelFuture>() {
+            public void operationComplete(ChannelFuture future) throws Exception {
+                logger.info(String.format(Thread.currentThread().getName() + " over connect %s %s", host, port));
+                if (future.isSuccess()) {
+                    logger.info(channel+"is closed");
+                    // work.shutdownGracefully();
+                    isConnected = false;
+                    onClosed();
+                }
+            }
+        });
+    }
 
     public void sendMsg(Object msg) {
         if(!isConnected){

@@ -14,6 +14,17 @@ proxyHttpServer:
   soSendBuf: 10240
   soRcvbuf: 102400
   tcpNodeLay: true
+#proxyTcpserver
+proxyTcpServer:
+  - port: 1201
+    userName: efei
+    targetHost: 192.168.50.2
+    targetPort: 22
+    maxContentLength: 5242880
+    soBacklog: 128
+    soSendBuf: 10240
+    soRcvbuf: 102400
+    tcpNodeLay: true
 #h2
 h2:
   url: jdbc:h2:~/h2/proxydb

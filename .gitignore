@@ -2,3 +2,5 @@
 *.iml
 *.log
 target
+proxyclient/log/gc.log
+demo/log/gc.log
