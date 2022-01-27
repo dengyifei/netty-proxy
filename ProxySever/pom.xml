@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.efei.proxy</groupId>
-    <artifactId>proxyclient</artifactId>
+    <artifactId>ProxyMainSever</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -35,6 +35,11 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.197</version>
+        </dependency>
+        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>1.2.24</version>
@@ -62,7 +67,6 @@
             <version>1.2.3</version>
             <scope>runtime</scope>
         </dependency>
-
     </dependencies>
     <build>
         <plugins>
@@ -74,7 +78,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.efei.proxy.ProxyMainClient</mainClass>
+                            <mainClass>com.efei.proxy.ProxyMainSever</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

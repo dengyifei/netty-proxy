@@ -12,14 +12,14 @@ proxyHttpServer:
   maxContentLength: 5242880
   soBacklog: 128
   soSendBuf: 10240
-  soRcvbuf: 102400
+  soRcvbuf: 10240
   tcpNodeLay: true
 #proxyTcpserver
 proxyTcpServer:
   - port: 1201
     userName: efei
-    targetHost: 192.168.50.2
-    targetPort: 22
+    targetHost: 192.168.0.100
+    targetPort: 81
     maxContentLength: 5242880
     soBacklog: 128
     soSendBuf: 10240
