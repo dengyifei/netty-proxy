@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 import com.efei.proxy.ProxyTcpServerManager;
 import com.efei.proxy.common.bean.ProxyTcpServerConfigBean;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.YamlMapFactoryBean;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
@@ -15,16 +16,18 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ResourceUtils;
 
 //import com.alibaba.fastjson.JSON;
 
 @Configuration
+@Slf4j
 public class ProxyConfig {
     private final static String config_file = "proxy.yml";
 
 
     @Bean
-    public static PropertySourcesPlaceholderConfigurer createProperties() {
+    public  PropertySourcesPlaceholderConfigurer createProperties() {
         PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
         yaml.setResources(new ClassPathResource(config_file));
@@ -42,15 +45,15 @@ public class ProxyConfig {
         List<Map<String,Object>> m2 = new ArrayList<Map<String,Object>>();
         List<Map<String,Object>> proxy = (List<Map<String,Object>>) m.getOrDefault("proxyTcpServer", m2);
         String str = JSON.toJSONString(proxy);
-        System.out.println(str);
+        log.info(str);
         List<ProxyTcpServerConfigBean> proxy2 = JSON.parseArray(str,ProxyTcpServerConfigBean.class);
         proxyTcpServerManager.setListProxyTcpServerConfigBean(proxy2);
         return proxyTcpServerManager;
     }
 
 
-    @Component
-    //@Import(ProxyConfig.class)
+
+    @Configuration
     public static class ProxyHttpServerConfig extends ServerConfig{
 
         @Value("${proxyHttpServer.maxContentLength}")
@@ -96,8 +99,7 @@ public class ProxyConfig {
         }
     }
 
-    @Component
-    //@Import(ProxyConfig.class)
+    @Configuration
     public static class ProxyTransmitServerConfig extends ServerConfig{
         @Value("${transmitServer.port}")
         int port;
@@ -175,15 +177,4 @@ public class ProxyConfig {
             return proxyTcpServerConfigBean;
         }
     }
-
-//    @Bean
-//    public Map<String, List<Object>> getServerPort2RealServer() {
-//        YamlMapFactoryBean yaml = new YamlMapFactoryBean();
-//        yaml.setResources(new ClassPathResource(config_file));
-//        Map<String, Object> m = yaml.getObject();
-//        Map<String, List<Object>> m2 = new LinkedHashMap<String, List<Object>>();
-//        Map<String, List<Object>> proxy = (Map<String, List<Object>>) m.getOrDefault("proxy", m2);
-//        return proxy;
-//
-//    }
 }

@@ -10,9 +10,10 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public abstract class Server {
-    private static  InternalLogger logger = InternalLoggerFactory.getInstance(Server.class);
 
     public abstract ChannelInitializer<SocketChannel> getChannelInitializer();
 
@@ -53,7 +54,7 @@ public abstract class Server {
         f.addListener(new GenericFutureListener<ChannelFuture>() {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    logger.info(String.format("success start server %s",port));
+                    log.info(String.format("success start server %s",port));
                 }
             }
         }).sync();
@@ -61,7 +62,7 @@ public abstract class Server {
         f.channel().closeFuture().addListener(new GenericFutureListener<ChannelFuture>() {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    logger.info(String.format("success stop server %s",port));
+                    log.info(String.format("success stop server %s",port));
                     work.shutdownGracefully();
                     boss.shutdownGracefully();
                 }
@@ -70,7 +71,7 @@ public abstract class Server {
     }
 
     public void stop(){
-        logger.info("stop server...");
+        log.info("stop server...");
         channel.close();
     }
 }

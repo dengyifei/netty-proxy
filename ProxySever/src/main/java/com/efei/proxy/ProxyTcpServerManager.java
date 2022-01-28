@@ -31,7 +31,7 @@ public class ProxyTcpServerManager {
     }
 
     public  void  start(){
-        System.out.println(JSON.toJSONString(listProxyTcpServerConfigBean));
+
         for(int i=0;i<listProxyTcpServerConfigBean.size();i++){
             ProxyTcpServerConfigBean c = listProxyTcpServerConfigBean.get(i);
             ProxyConfig.ProxyTcpServerConfig proxyTcpServerConfig = new ProxyConfig.ProxyTcpServerConfig(c);

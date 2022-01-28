@@ -1,9 +1,8 @@
 package com.efei.proxy;
 
 import com.efei.proxy.config.ProxyConfig;
-import io.netty.util.internal.logging.InternalLogger;
-import io.netty.util.internal.logging.InternalLoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +15,7 @@ import org.springframework.context.annotation.Import;
 @Import(ProxyConfig.class)
 public class ProxyMainSever {
 
-    private static  InternalLogger logger = InternalLoggerFactory.getInstance(ProxyMainSever.class);
+    private static Logger logger = LoggerFactory.getLogger(ProxyMainSever.class);
 //    public static void main(String[] args)  {
 //        Thread porxyHttpServerThread = new Thread(()->{
 //            try {
@@ -49,7 +48,7 @@ public class ProxyMainSever {
 
         ProxyMainSever app = context.getBean(ProxyMainSever.class);
         Runtime.getRuntime().addShutdownHook(new Thread(()-> {
-            logger.warn("程序退出");
+            logger.info("程序退出");
             context.close();
         }));
         app.start();
