@@ -3,6 +3,7 @@ package com.efei.proxy.channelHandler;
 import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.cache.Cache;
+import com.efei.proxy.common.util.ChannelUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Component;
 /**
  * 响应数据到用户channel
  */
-@Component
 @ChannelHandler.Sharable
 public class ProxyReponseDataHandler extends ChannelInboundHandlerAdapter {
 
@@ -36,7 +36,6 @@ public class ProxyReponseDataHandler extends ChannelInboundHandlerAdapter {
         ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean)msg;
         if(msg2.getType() == Constant.MSG_HTTPPACKAGE){
             transmitToUserChannel(ctx,msg2);
-            // return;
         } else if(msg2.getType() == Constant.MSG_TCPPACKAGE){
             transmitToUserChannel(ctx,msg2);
         }
@@ -60,6 +59,7 @@ public class ProxyReponseDataHandler extends ChannelInboundHandlerAdapter {
         Channel userChannel = Cache.get(key);
 //        ByteBuf buf = Unpooled.buffer();
 //        buf.writeBytes(msg.getContent());
-        userChannel.writeAndFlush(msg);
+//        userChannel.writeAndFlush(msg);
+        ChannelUtil.writeAndFlush(userChannel,msg.getContent());
     }
 }

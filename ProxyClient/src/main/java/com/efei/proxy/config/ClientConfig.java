@@ -1,16 +1,19 @@
 package com.efei.proxy.config;
 
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
+
+@Data
 public abstract  class ClientConfig {
+    protected int soBacklog;
 
-    public abstract int getSoBacklog();
+    protected int soSendBuf;
 
-    public abstract int getSoSendBuf();
+    protected int soRcvbuf;
 
-    public abstract int getSoRcvbuf();
+    protected boolean tcpNodeLay;
 
-    public abstract boolean isTcpNodeLay();
+    protected int connectTimeout;
 
-    public abstract int getConnectTimeout();
-
-    public abstract int getNthreads();
+    protected int nThreads;
 }

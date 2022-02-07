@@ -13,7 +13,6 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-@Component
 @ChannelHandler.Sharable
 public class HeartBeatServerHandler extends ChannelInboundHandlerAdapter {
     private static InternalLogger logger = InternalLoggerFactory.getInstance(HeartBeatServerHandler.class);

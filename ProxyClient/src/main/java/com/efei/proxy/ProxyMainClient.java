@@ -2,6 +2,8 @@ package com.efei.proxy;
 
 import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ProxyConfig;
+import com.efei.proxy.config.ProxyHttpClientConfig;
+import com.efei.proxy.config.ProxyTransmitClientConfig;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,13 +43,13 @@ public class ProxyMainClient {
 //    }
 
     private static InternalLogger logger = InternalLoggerFactory.getInstance(ProxyMainClient.class);
-    private  static  transient ApplicationContext applicationContext;
+    private static  ApplicationContext applicationContext;
 
     @Autowired
-    private ProxyConfig.ProxyTransmitClientConfig proxyTransmitClientConfig;
+    private ProxyTransmitClientConfig proxyTransmitClientConfig;
 
     @Autowired
-    private ProxyConfig.ProxyHttpClientConfig proxyHttpClientConfig;
+    private ProxyHttpClientConfig proxyHttpClientConfig;
 
     @Autowired
     private Timer timer;
@@ -82,7 +84,7 @@ public class ProxyMainClient {
             proxyHttpClientConfig.setPort(Integer.valueOf(port));
         }
 
-        ProxyTransmitClient2 proxyTransmitClient = SpringConfigTool.getBean(ProxyTransmitClient2.class);
+        ProxyTransmitClient proxyTransmitClient = SpringConfigTool.getBean(ProxyTransmitClient.class);
         proxyTransmitClient.bulidBootstrap();
         proxyTransmitClient.doConnect(proxyTransmitClientConfig.getHost(),proxyTransmitClientConfig.getPort());
         // 监控缓存

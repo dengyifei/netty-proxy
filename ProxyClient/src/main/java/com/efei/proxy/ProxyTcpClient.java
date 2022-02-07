@@ -7,7 +7,7 @@ import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.cache.Cache;
 import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ClientConfig;
-import com.efei.proxy.config.ProxyConfig;
+import com.efei.proxy.config.ProxyTcpClientConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -31,7 +31,7 @@ public class ProxyTcpClient extends Client {
         this.key = key;
     }
 
-    private ChannelInboundHandlerAdapter proxyReponseDataInboundHandler = new ChannelInboundHandlerAdapter(){
+    private ChannelInboundHandlerAdapter reponseDataInboundHandler = new ChannelInboundHandlerAdapter(){
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             byte[] content =null;
@@ -43,8 +43,8 @@ public class ProxyTcpClient extends Client {
                 ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_TCPPACKAGE,Constant.MSG_PRP,key,content.length,content);
                 logger.debug(b.toStr());
                 //Client c = Cache.get(ProxyTransmitClient.class.getSimpleName());
-                Client c = SpringConfigTool.getBean(ProxyTransmitClient2.class);
-                c.sendMsg(b.toByteBuf());
+                Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
+                c.sendMsg(b);
                 ReferenceCountUtil.release(msg);
             } else {
                 ctx.fireChannelRead(msg);
@@ -79,14 +79,14 @@ public class ProxyTcpClient extends Client {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pip = ch.pipeline();
-                pip.addLast(proxyReponseDataInboundHandler);
+                pip.addLast(reponseDataInboundHandler);
             }
         };
     }
 
     @Override
     public ClientConfig getClientConfig() {
-        return SpringConfigTool.getBean(ProxyConfig.ProxyTcpClientConfig.class);
+        return SpringConfigTool.getBean(ProxyTcpClientConfig.class);
     }
 
     @Override
@@ -97,8 +97,8 @@ public class ProxyTcpClient extends Client {
         String reponse = jo.toJSONString();
         byte[] content = reponse.getBytes(CharsetUtil.UTF_8);
         ProxyTcpProtocolBean reponseMsg = new ProxyTcpProtocolBean(Constant.MSG_CONNECT,Constant.MSG_PRP,key,content.length,content);
-        Client c = SpringConfigTool.getBean(ProxyTransmitClient2.class);
-        c.sendMsg(reponseMsg.toByteBuf());
+        Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
+        c.sendMsg(reponseMsg);
     }
 
     @Override
@@ -109,8 +109,8 @@ public class ProxyTcpClient extends Client {
         String reponse = jo.toJSONString();
         byte[] content = reponse.getBytes(CharsetUtil.UTF_8);
         ProxyTcpProtocolBean reponseMsg = new ProxyTcpProtocolBean(Constant.MSG_CONNECT,Constant.MSG_PRP,key,content.length,content);
-        Client c = SpringConfigTool.getBean(ProxyTransmitClient2.class);
-        c.sendMsg(reponseMsg.toByteBuf());
+        Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
+        c.sendMsg(reponseMsg);
     }
 
     @Override

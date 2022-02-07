@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
-@Component
 @ChannelHandler.Sharable
 public class HeartBeatClientHandler extends ChannelInboundHandlerAdapter {
 

@@ -1,20 +1,17 @@
 package com.efei.proxy.channelHandler;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.efei.proxy.ClientFacetory;
+import com.efei.proxy.ClientFactory;
 import com.efei.proxy.ProxyHttpClient;
 import com.efei.proxy.ProxyTcpClient;
 import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.bean.ProxyTcpServerConfigBean;
 import com.efei.proxy.common.cache.Cache;
-import com.efei.proxy.common.util.MathUtil;
-import com.efei.proxy.config.ProxyConfig;
+import com.efei.proxy.config.ProxyHttpClientConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.util.CharsetUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +23,6 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * 处理转发服务端转过来的数据,数据转发到目标服务
  */
-@Component
 @ChannelHandler.Sharable
 public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter {
 
@@ -35,7 +31,7 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
     private Lock lock = new ReentrantLock();
 
     @Autowired
-    private ProxyConfig.ProxyHttpClientConfig proxyHttpClientConfig;
+    private ProxyHttpClientConfig proxyHttpClientConfig;
 
     private  static ProxyRequestDataInboundHandler self = null;
 
@@ -83,8 +79,6 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
         ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean)msg;
         byte[] content = msg2.getContent();
         ProxyTcpServerConfigBean config = JSONObject.parseObject(content, ProxyTcpServerConfigBean.class);
-        System.out.println(JSON.toJSONString(config));
-        logger.debug(msg2.toStr());
         logger.info("连接目标服务 {} {}",config.getTargetHost(),config.getTargetPort());
         ProxyTcpClient c = Cache.get(msg2.getKey());
         if(c==null){
@@ -92,7 +86,7 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
             try{
                 c = Cache.get(msg2.getKey());
                 if(c==null){
-                    c = (ProxyTcpClient)ClientFacetory.buildCacheProxyTcpClient(msg2.getKey(),0);
+                    c = (ProxyTcpClient) ClientFactory.buildCacheProxyTcpClient(msg2.getKey(),0);
                     c.setKey(msg2.getKey());
                     c.bulidBootstrap();
                     c.doConnect(config.getTargetHost(),config.getTargetPort());
@@ -118,7 +112,7 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
             try{
                 c = Cache.get(msg2.getKey());
                 if(c==null){
-                    c = (ProxyHttpClient)ClientFacetory.buildCacheProxyHttpClient(msg2.getKey(),0);
+                    c = (ProxyHttpClient) ClientFactory.buildCacheProxyHttpClient(msg2.getKey(),0);
                     c.setKey(msg2.getKey());
                     c.bulidBootstrap();
                     c.doConnect(proxyHttpClientConfig.getHost(),proxyHttpClientConfig.getPort());

@@ -6,7 +6,7 @@ import com.efei.proxy.common.cache.Cache;
 /**
  *
  */
-public class ClientFacetory {
+public class ClientFactory {
 
 
 

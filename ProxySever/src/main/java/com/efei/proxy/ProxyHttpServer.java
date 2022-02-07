@@ -2,11 +2,11 @@ package com.efei.proxy;
 
 import com.Server;
 import com.efei.proxy.channelHandler.ProxyRequestHttpDataHandler;
-import com.efei.proxy.common.codec.HttpResponseTransmitEncoder;
 import com.efei.proxy.common.util.SpringConfigTool;
-import com.efei.proxy.config.ProxyConfig;
+import com.efei.proxy.config.ProxyHttpServerConfig;
 import com.efei.proxy.config.ServerConfig;
-import io.netty.channel.*;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
@@ -21,7 +21,7 @@ public class ProxyHttpServer extends Server {
 
 
     @Autowired
-    private ProxyConfig.ProxyHttpServerConfig proxyHttpServerConfig;
+    private ProxyHttpServerConfig proxyHttpServerConfig;
 
     public ChannelInitializer<SocketChannel> getChannelInitializer() {
 
@@ -37,11 +37,11 @@ public class ProxyHttpServer extends Server {
 //                pip.addLast(new HttpObjectAggregator(2*1024));
 
                 pip.addLast(new HttpRequestDecoder());
-                pip.addLast(new HttpObjectAggregator(proxyHttpServerConfig.getMaxContentLength()));
+                pip.addLast(new HttpObjectAggregator(proxyHttpServerConfig.getMaxFrameLength()));
 
                 pip.addLast(SpringConfigTool.getBean(ProxyRequestHttpDataHandler.class));
                 //pip.addLast(new HttpResponseEncoder());
-                pip.addLast(SpringConfigTool.getBean(HttpResponseTransmitEncoder.class));
+                //pip.addLast(SpringConfigTool.getBean(HttpResponseTransmitEncoder.class));
 
 ;
             }

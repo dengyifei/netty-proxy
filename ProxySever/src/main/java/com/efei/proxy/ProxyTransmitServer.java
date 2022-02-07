@@ -4,22 +4,18 @@ import com.Server;
 import com.efei.proxy.channelHandler.HeartBeatServerHandler;
 import com.efei.proxy.channelHandler.LoginChannelHandler;
 import com.efei.proxy.channelHandler.ProxyReponseDataHandler;
-import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.codec.HttpRequestTransmitEncoder;
 import com.efei.proxy.common.codec.ProxyTcpProtocolDecoder;
-import com.efei.proxy.common.codec.TcpRequestTransmitEncoder;
+import com.efei.proxy.common.codec.ProxyTcpProtocolEncoder;
 import com.efei.proxy.common.util.SpringConfigTool;
-import com.efei.proxy.config.ProxyConfig;
+import com.efei.proxy.config.ProxyTransmitServerConfig;
 import com.efei.proxy.config.ServerConfig;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 
@@ -32,7 +28,7 @@ public class ProxyTransmitServer extends Server{
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyTransmitServer.class);
     @Autowired
-    private ProxyConfig.ProxyTransmitServerConfig proxyTransmitServerConfig;
+    private ProxyTransmitServerConfig proxyTransmitServerConfig;
 
     //private IdleStateHandler idleStateHandler =  new IdleStateHandler(5,0,0);
 
@@ -42,14 +38,15 @@ public class ProxyTransmitServer extends Server{
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pip = ch.pipeline();
                 pip.addLast(new IdleStateHandler(10,0,0));
-                pip.addLast(SpringConfigTool.getBean(HeartBeatServerHandler.class));
+                pip.addLast(new HeartBeatServerHandler());
                 pip.addLast(new ProxyTcpProtocolDecoder(1048576, 8, 4, 0, 0, false));
-                pip.addLast(SpringConfigTool.getBean(LoginChannelHandler.class));
-                pip.addLast(SpringConfigTool.getBean(ProxyReponseDataHandler.class));
+                pip.addLast(new LoginChannelHandler());
+                pip.addLast(new ProxyReponseDataHandler());
 
                 //数据传出去
-                pip.addLast(SpringConfigTool.getBean(TcpRequestTransmitEncoder.class));
-                pip.addLast(SpringConfigTool.getBean(HttpRequestTransmitEncoder.class));
+                pip.addLast(new HttpRequestTransmitEncoder());
+                pip.addLast(new ProxyTcpProtocolEncoder());
+
 
 //                pip.addLast(new ChannelOutboundHandlerAdapter(){
 //                    @Override

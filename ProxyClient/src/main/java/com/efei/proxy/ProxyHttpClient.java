@@ -7,6 +7,7 @@ import com.efei.proxy.common.cache.Cache;
 import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ClientConfig;
 import com.efei.proxy.config.ProxyConfig;
+import com.efei.proxy.config.ProxyHttpClientConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
@@ -33,7 +34,7 @@ public class ProxyHttpClient extends Client {
 
     //private AttributeKey<Integer> numreadsKey = AttributeKey.valueOf("numreadsKey");
 
-    private ChannelInboundHandlerAdapter proxyReponseDataInboundHandler = new ChannelInboundHandlerAdapter(){
+    private ChannelInboundHandlerAdapter reponseDataInboundHandler = new ChannelInboundHandlerAdapter(){
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             byte[] content =null;
@@ -45,8 +46,8 @@ public class ProxyHttpClient extends Client {
                 ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_HTTPPACKAGE,Constant.MSG_PRP,key,content.length,content);
                 logger.debug(b.toStr());
                 //Client c = Cache.get(ProxyTransmitClient.class.getSimpleName());
-                Client c = SpringConfigTool.getBean(ProxyTransmitClient2.class);
-                c.sendMsg(b.toByteBuf());
+                Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
+                c.sendMsg(b);
                 ReferenceCountUtil.release(msg);
             } else {
                 ctx.fireChannelRead(msg);
@@ -79,7 +80,7 @@ public class ProxyHttpClient extends Client {
 //                    }
 //                });
 
-                pip.addLast(proxyReponseDataInboundHandler);
+                pip.addLast(reponseDataInboundHandler);
             }
         };
     }
@@ -113,7 +114,7 @@ public class ProxyHttpClient extends Client {
 
     @Override
     public ClientConfig getClientConfig() {
-        return SpringConfigTool.getBean(ProxyConfig.ProxyHttpClientConfig.class);
+        return SpringConfigTool.getBean(ProxyHttpClientConfig.class);
     }
 
     public void addMsg(ByteBuf msg){

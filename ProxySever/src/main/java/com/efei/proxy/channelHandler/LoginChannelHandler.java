@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 /**
  * 接收客户端连接，保存与转发客户端的channel.
  */
-@Component
 @ChannelHandler.Sharable
 public class LoginChannelHandler extends ChannelInboundHandlerAdapter {
 

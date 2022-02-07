@@ -38,8 +38,8 @@ public abstract class Server {
 
 
     public void start(final int port) throws InterruptedException {
-        boss = new NioEventLoopGroup(2);
-        work = new NioEventLoopGroup(2);
+        boss = new NioEventLoopGroup(getServerConfig().getBossThreadNum());
+        work = new NioEventLoopGroup(getServerConfig().getWorkThreadNum());
 
         ServerBootstrap bootstrap = new ServerBootstrap();
         ChannelFuture f = bootstrap.group(boss, work)

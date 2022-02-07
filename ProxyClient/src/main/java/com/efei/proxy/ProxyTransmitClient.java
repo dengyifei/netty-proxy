@@ -7,10 +7,11 @@ import com.efei.proxy.channelHandler.ProxyRequestDataInboundHandler;
 import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.codec.ProxyTcpProtocolDecoder;
+import com.efei.proxy.common.codec.ProxyTcpProtocolEncoder;
 import com.efei.proxy.common.util.MathUtil;
 import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ClientConfig;
-import com.efei.proxy.config.ProxyConfig;
+import com.efei.proxy.config.ProxyTransmitClientConfig;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -22,15 +23,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ProxyTransmitClient2 extends Client {
+public class ProxyTransmitClient extends Client {
 
-    private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyTransmitClient2.class);
+    private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyTransmitClient.class);
     //private ProxyTcpProtocolDecoder proxyTcpDecoder = ProxyTcpProtocolDecoder.getSelf();
 
 
 
     @Autowired
-    private ProxyConfig.ProxyTransmitClientConfig proxyTransmitClientConfig;
+    private ProxyTransmitClientConfig proxyTransmitClientConfig;
     @Override
     public ChannelInitializer<SocketChannel> getChannelInitializer() {
         return new ChannelInitializer<SocketChannel>() {
@@ -38,9 +39,10 @@ public class ProxyTransmitClient2 extends Client {
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pip = ch.pipeline();
                 pip.addLast(new IdleStateHandler(10,7,0));
-                pip.addLast(SpringConfigTool.getBean(HeartBeatClientHandler.class));
+                pip.addLast(new HeartBeatClientHandler());
                 pip.addLast(ProxyTcpProtocolDecoder.getSelf()); // 解析出对象
-                pip.addLast(SpringConfigTool.getBean(ProxyRequestDataInboundHandler.class)); // 处理对象
+                pip.addLast(new ProxyRequestDataInboundHandler()); // 处理对象
+                pip.addLast(new ProxyTcpProtocolEncoder());
 
 //                pip.addLast("encode",new ChannelOutboundHandlerAdapter(){
 //                    @Override
@@ -61,7 +63,7 @@ public class ProxyTransmitClient2 extends Client {
         byte[] content = loginStr.getBytes(CharsetUtil.UTF_8);
         String key = MathUtil.getRandomString(6);
         ProxyTcpProtocolBean loginMsg = new ProxyTcpProtocolBean(Constant.MSG_LOGIN,Constant.MSG_RQ,key,content.length,content);
-        sendMsg(loginMsg.toByteBuf());
+        sendMsg(loginMsg);
     }
 
     @Override

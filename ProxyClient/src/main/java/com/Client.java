@@ -54,7 +54,7 @@ public abstract class Client {
     ChannelFuture clientChannelFuture;
 
     public Bootstrap bulidBootstrap(){
-        work = new NioEventLoopGroup(getClientConfig().getNthreads());
+        work = new NioEventLoopGroup(getClientConfig().getNThreads());
         boot = new Bootstrap();
         boot.channel(NioSocketChannel.class)
                 .handler(getChannelInitializer())
@@ -138,7 +138,7 @@ public abstract class Client {
     }
 
     public void close(){
-        System.out.println("client closed connection");
+        logger.info("client closed connection");
         this.channel.close();
     }
 
@@ -162,23 +162,24 @@ public abstract class Client {
         });
     }
 
-    public void sendMsg(Object msg) {
+    public ChannelFuture sendMsg(Object msg) {
         if(!isConnected){
-            System.err.println("host not connected");
+            logger.info("host not connected");
+            return null;
         }
-        this.channel.writeAndFlush(msg).addListener(new GenericFutureListener<ChannelFuture>() {
+        return this.channel.writeAndFlush(msg).addListener(new GenericFutureListener<ChannelFuture>() {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if(future.isSuccess()){
                     // System.out.println("send msg success");
                 } else {
-                    System.err.println("send msg fail::" + future);
+                    logger.info("send msg fail::" + future);
                 }
             }
         });
     }
 
-    public void sendMsg(Object msg,GenericFutureListener<ChannelFuture> listener) {
-        this.channel.writeAndFlush(msg).addListener(listener);
+    public ChannelFuture sendMsg(Object msg,GenericFutureListener<ChannelFuture> listener) {
+        return this.channel.writeAndFlush(msg).addListener(listener);
     }
 
     public Channel getChannel() {

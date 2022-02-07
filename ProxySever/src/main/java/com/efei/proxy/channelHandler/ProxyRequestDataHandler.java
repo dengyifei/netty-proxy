@@ -1,48 +1,34 @@
 package com.efei.proxy.channelHandler;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
-import com.efei.proxy.common.bean.ProxyTcpServerConfigBean;
 import com.efei.proxy.common.cache.Cache;
+import com.efei.proxy.common.util.ChannelUtil;
 import com.efei.proxy.common.util.MathUtil;
-import com.efei.proxy.config.ProxyConfig;
+import com.efei.proxy.config.ProxyTcpServerConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
-import org.springframework.stereotype.Component;
 
 
 /**
- * 转发服务端用来接收用户端发来的数据并转发给转发客户端,目前是当成4层tcp处理
+ * 用来接收用户端发来的数据并转发给转发客户端,目前是当成4层tcp处理
  */
 //@Component
 @ChannelHandler.Sharable
 public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyRequestDataHandler.class);
 
+    private ProxyTcpServerConfig proxyTcpServerConfig;
 
-    private static ProxyRequestDataHandler self = null;
-
-    private ProxyConfig.ProxyTcpServerConfig proxyTcpServerConfig;
-
-    public synchronized static ProxyRequestDataHandler getSelf(){
-        return self == null ? self = new ProxyRequestDataHandler() : self;
-        //return new ProxyRequestDataHandler();
-    }
-
-    public synchronized static ProxyRequestDataHandler getSelfByconfig(ProxyConfig.ProxyTcpServerConfig config){
-        //return self == null ? self = new ProxyRequestDataHandler() : self;
-        ProxyRequestDataHandler handler = new ProxyRequestDataHandler();
-        handler.proxyTcpServerConfig = config;
-        return handler;
+    public ProxyRequestDataHandler(ProxyTcpServerConfig proxyTcpServerConfig){
+        this.proxyTcpServerConfig = proxyTcpServerConfig;
     }
 
     @Override
@@ -62,20 +48,34 @@ public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
             Cache.put(key,ctx.channel());
         }
 
-        // 下发数据到客户端去连接
-        ProxyTcpServerConfigBean proxyTcpServerConfigBean= proxyTcpServerConfig.getProxyTcpServerConfigBean();
-        String userName = proxyTcpServerConfigBean.getUserName();
+
+        String userName = proxyTcpServerConfig.getUserName();
         Channel c = Cache.get(userName);
         if(c==null){
-            logger.info("{} 客户端没有登陆",userName);
+            logger.info(" 客户端{}没有登陆,通道关闭",userName);
             ctx.close();
             return;
         }
-        byte[] content = JSON.toJSONBytes(proxyTcpServerConfigBean);
+        /**
+         *  通知客户端去连接
+         */
+        byte[] content = JSON.toJSONBytes(proxyTcpServerConfig);
         ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_CONNECT,Constant.MSG_PRQ,key,content.length,content);
 //        ByteBuf buf = ctx.alloc().buffer();
 //        b.toByteBuf(buf);
-        c.writeAndFlush(b);
+
+        ChannelUtil.writeAndFlush(c,b).await(3*1000);
+
+        Boolean isConnect = ctx.channel().attr(Constant.KEY_CONNECT).get();
+        int timeout =1;
+        while (!isConnect){
+            Thread.sleep(1000*1);
+            isConnect = ctx.channel().attr(Constant.KEY_CONNECT).get();
+            if(!isConnect && timeout>10){
+                logger.info("连接目标客户端超时");
+                ctx.close();
+            }
+        }
     }
 
     @Override
@@ -94,30 +94,17 @@ public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
-        Boolean isConnect = ctx.channel().attr(Constant.KEY_CONNECT).get();
-        while (isConnect != Boolean.TRUE){
-            Thread.sleep(1000*1);
-            isConnect = ctx.channel().attr(Constant.KEY_CONNECT).get();
-        }
-//        if(isConnect != Boolean.TRUE){
-//            logger.info("客户端与目标主机连接失败");
-//            return;
-//        }
         ByteBuf in = (ByteBuf) msg;
         byte[] content = new byte[in.readableBytes()];
         in.readBytes(content);
         String key = ctx.channel().attr(Constant.KEY_USERCHANNEL).get();
         ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_TCPPACKAGE,Constant.MSG_RQ,key,content.length,content);
-        logger.debug(b.toStr());
-        // Channel c = Cache.get("efei");
-        ProxyTcpServerConfigBean proxyTcpServerConfigBean= proxyTcpServerConfig.getProxyTcpServerConfigBean();
-        String userName = proxyTcpServerConfigBean.getUserName();
+        String userName = proxyTcpServerConfig.getUserName();
         Channel c = Cache.get(userName);
         if(c!=null){
-            c.writeAndFlush(b);
+            ChannelUtil.writeAndFlush(c,b);
         } else {
-            logger.error("{} client is not line",userName);
+            logger.info("{} client is not line",userName);
         }
         ReferenceCountUtil.release(msg);
     }

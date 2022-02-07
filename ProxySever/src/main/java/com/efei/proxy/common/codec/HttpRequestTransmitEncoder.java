@@ -18,7 +18,6 @@ import java.util.List;
  * 放在ProxyTransmitServer 中
  * 将用户端的http请求实体(FullHttpRequest),转化成ProxyTcpProtocolBean
  */
-@Component
 @ChannelHandler.Sharable
 public class HttpRequestTransmitEncoder extends HttpRequestEncoder {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(HttpRequestTransmitEncoder.class);
