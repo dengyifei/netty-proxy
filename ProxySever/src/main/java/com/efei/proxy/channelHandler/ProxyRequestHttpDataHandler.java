@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 /**
  * http 转发处理其
  */
-@Component
+//@Component
 @ChannelHandler.Sharable
 public class ProxyRequestHttpDataHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
@@ -62,7 +62,9 @@ public class ProxyRequestHttpDataHandler extends SimpleChannelInboundHandler<Ful
         //FullHttpRequest req2 = req.copy();
         req.retain();
         if(c!=null){
-            c.writeAndFlush(req);
+            //c.writeAndFlush(req);
+
+
         } else {
             logger.error("{} client is not line",domain1);
             reponse(ctx,domain1+ " client is not line");

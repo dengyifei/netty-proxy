@@ -54,17 +54,17 @@ public abstract class Client {
     ChannelFuture clientChannelFuture;
 
     public Bootstrap bulidBootstrap(){
-        work = new NioEventLoopGroup(getClientConfig().getNThreads());
+        work = new NioEventLoopGroup(1);
         boot = new Bootstrap();
         boot.channel(NioSocketChannel.class)
                 .handler(getChannelInitializer())
                 // .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 // .option(ChannelOption.RCVBUF_ALLOCATOR, AdaptiveRecvByteBufAllocator.DEFAULT)
                 .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.SO_SNDBUF, getClientConfig().getSoSendBuf())
-                .option(ChannelOption.SO_RCVBUF, getClientConfig().getSoRcvbuf())
-                .option(ChannelOption.TCP_NODELAY,getClientConfig().isTcpNodeLay())
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,getClientConfig().getConnectTimeout())
+//                .option(ChannelOption.SO_SNDBUF, getClientConfig().getSoSendBuf())
+//                .option(ChannelOption.SO_RCVBUF, getClientConfig().getSoRcvbuf())
+//                .option(ChannelOption.TCP_NODELAY,getClientConfig().isTcpNodeLay())
+//                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,getClientConfig().getConnectTimeout())
                 .group(work);
         return boot;
     }

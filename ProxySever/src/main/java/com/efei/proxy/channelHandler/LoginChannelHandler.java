@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.cache.Cache;
+import com.efei.proxy.common.util.ChannelUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -47,10 +48,15 @@ public class LoginChannelHandler extends ChannelInboundHandlerAdapter {
     private void login(ChannelHandlerContext ctx, ProxyTcpProtocolBean msg){
         //String key = msg.getKey();
         String content = msg.getContentStr();
-        logger.debug("login str:{}",content);
+        logger.info("login str:{}",content);
         JSONObject jo = JSON.parseObject(content);
         String username = jo.getString("username");
         ctx.channel().attr(Constant.KEY_USERNAME).set(username);
         Cache.put(username,ctx.channel());
+        JSONObject rp = new JSONObject();
+        rp.put("msg","ok");
+        byte[] cc = JSON.toJSONBytes(rp);
+        ProxyTcpProtocolBean rpMsg = new ProxyTcpProtocolBean(Constant.MSG_LOGIN,Constant.MSG_RP,"654321",cc.length,cc);
+        ChannelUtil.writeAndFlush(ctx.channel(),rpMsg);
     }
 }

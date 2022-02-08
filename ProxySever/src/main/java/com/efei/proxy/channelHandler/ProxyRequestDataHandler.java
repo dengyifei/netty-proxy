@@ -60,20 +60,21 @@ public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
          *  通知客户端去连接
          */
         byte[] content = JSON.toJSONBytes(proxyTcpServerConfig);
-        ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_CONNECT,Constant.MSG_PRQ,key,content.length,content);
+        ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_CONNECT,Constant.MSG_RQ,key,content.length,content);
 //        ByteBuf buf = ctx.alloc().buffer();
 //        b.toByteBuf(buf);
-
-        ChannelUtil.writeAndFlush(c,b).await(3*1000);
+        ChannelUtil.writeAndFlush(c,b).await(1*1000);
 
         Boolean isConnect = ctx.channel().attr(Constant.KEY_CONNECT).get();
-        int timeout =1;
-        while (!isConnect){
+        int timeout =0;
+        while (isConnect==null || !isConnect){
             Thread.sleep(1000*1);
             isConnect = ctx.channel().attr(Constant.KEY_CONNECT).get();
-            if(!isConnect && timeout>10){
+            timeout++;
+            if(timeout>10){
                 logger.info("连接目标客户端超时");
                 ctx.close();
+                break;
             }
         }
     }
@@ -106,6 +107,6 @@ public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
         } else {
             logger.info("{} client is not line",userName);
         }
-        ReferenceCountUtil.release(msg);
+        //ReferenceCountUtil.release(msg);
     }
 }

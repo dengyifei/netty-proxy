@@ -37,14 +37,14 @@ public class ProxyTransmitServer extends Server{
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pip = ch.pipeline();
-                pip.addLast(new IdleStateHandler(10,0,0));
-                pip.addLast(new HeartBeatServerHandler());
-                pip.addLast(new ProxyTcpProtocolDecoder(1048576, 8, 4, 0, 0, false));
+//                pip.addLast(new IdleStateHandler(10,0,0));
+//                pip.addLast(new HeartBeatServerHandler());
+                pip.addLast(ProxyTcpProtocolDecoder.getSelf());
                 pip.addLast(new LoginChannelHandler());
                 pip.addLast(new ProxyReponseDataHandler());
 
                 //数据传出去
-                pip.addLast(new HttpRequestTransmitEncoder());
+                //pip.addLast(new HttpRequestTransmitEncoder());
                 pip.addLast(new ProxyTcpProtocolEncoder());
 
 

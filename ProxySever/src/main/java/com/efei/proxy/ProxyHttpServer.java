@@ -39,7 +39,7 @@ public class ProxyHttpServer extends Server {
                 pip.addLast(new HttpRequestDecoder());
                 pip.addLast(new HttpObjectAggregator(proxyHttpServerConfig.getMaxFrameLength()));
 
-                pip.addLast(SpringConfigTool.getBean(ProxyRequestHttpDataHandler.class));
+                pip.addLast(new ProxyRequestHttpDataHandler());
                 //pip.addLast(new HttpResponseEncoder());
                 //pip.addLast(SpringConfigTool.getBean(HttpResponseTransmitEncoder.class));
 

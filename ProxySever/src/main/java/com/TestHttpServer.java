@@ -58,33 +58,9 @@ public class TestHttpServer extends Server {
 
     @Override
     public ServerConfig getServerConfig() {
-        return new ServerConfig() {
-            @Override
-            public int getPort() {
-                return 9001;
-            }
-
-            @Override
-            public int getSoBacklog() {
-                return 128;
-            }
-
-            @Override
-            public int getSoSendBuf() {
-                return 10240;
-            }
-
-            @Override
-            public int getSoRcvbuf() {
-                return 102400;
-            }
-
-            @Override
-            public boolean isTcpNodeLay() {
-                return true;
-            }
-        };
+        return null;
     }
+
 
     @Override
     public void start(int port) throws InterruptedException {

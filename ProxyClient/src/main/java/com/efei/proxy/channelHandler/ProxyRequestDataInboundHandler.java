@@ -46,11 +46,13 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
     public void channelRead(ChannelHandlerContext ctx, final Object msg) throws Exception {
         // super.channelRead(ctx, msg);
         // testChannelRead(ctx,msg);
+        logger.info("接收到消息"+msg);
         ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean)msg;
         if(msg2.getType() == Constant.MSG_HEART){
 
         } else if(msg2.getType() == Constant.MSG_CONNECT) {
             // 连接目标服务端
+            logger.info("连接目标服务端");
             connectTargetServer(ctx,msg);
         } else if (msg2.getType() == Constant.MSG_HTTPPACKAGE){
             transmitTotargetHttpServer(ctx,msg);

@@ -17,11 +17,12 @@ public class ProxyTcpProtocolEncoder extends ChannelOutboundHandlerAdapter {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if(msg instanceof ProxyTcpProtocolBean){
             ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean)msg;
-            ByteBuf buf = ctx.alloc().buffer();
+            ByteBuf buf = ctx.channel().alloc().buffer();
             msg2.toByteBuf(buf);
-            super.write(ctx, buf, promise);
+            super.write(ctx,buf, promise);
+            //ctx.channel().writeAndFlush(buf);
         }else {
-            super.write(ctx, msg, promise);
+            super.write(ctx,msg, promise);
         }
     }
 }

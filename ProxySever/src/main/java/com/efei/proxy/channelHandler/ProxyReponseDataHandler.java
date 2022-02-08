@@ -58,8 +58,9 @@ public class ProxyReponseDataHandler extends ChannelInboundHandlerAdapter {
         String key = msg.getKey();
         Channel userChannel = Cache.get(key);
 //        ByteBuf buf = Unpooled.buffer();
-//        buf.writeBytes(msg.getContent());
+        ByteBuf buf = ctx.channel().alloc().buffer();
+        buf.writeBytes(msg.getContent());
 //        userChannel.writeAndFlush(msg);
-        ChannelUtil.writeAndFlush(userChannel,msg.getContent());
+        ChannelUtil.writeAndFlush(userChannel,buf);
     }
 }

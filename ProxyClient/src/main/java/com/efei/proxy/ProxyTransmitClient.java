@@ -38,10 +38,11 @@ public class ProxyTransmitClient extends Client {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pip = ch.pipeline();
-                pip.addLast(new IdleStateHandler(10,7,0));
-                pip.addLast(new HeartBeatClientHandler());
+//                pip.addLast(new IdleStateHandler(10,7,0));
+//                pip.addLast(new HeartBeatClientHandler());
                 pip.addLast(ProxyTcpProtocolDecoder.getSelf()); // 解析出对象
                 pip.addLast(new ProxyRequestDataInboundHandler()); // 处理对象
+
                 pip.addLast(new ProxyTcpProtocolEncoder());
 
 //                pip.addLast("encode",new ChannelOutboundHandlerAdapter(){

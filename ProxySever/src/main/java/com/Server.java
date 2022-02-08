@@ -38,23 +38,24 @@ public abstract class Server {
 
 
     public void start(final int port) throws InterruptedException {
-        boss = new NioEventLoopGroup(getServerConfig().getBossThreadNum());
-        work = new NioEventLoopGroup(getServerConfig().getWorkThreadNum());
-
+//        boss = new NioEventLoopGroup(getServerConfig().getBossThreadNum());
+//        work = new NioEventLoopGroup(getServerConfig().getWorkThreadNum());
+        boss = new NioEventLoopGroup(1);
+        work = new NioEventLoopGroup(1);
         ServerBootstrap bootstrap = new ServerBootstrap();
         ChannelFuture f = bootstrap.group(boss, work)
                 .channel(NioServerSocketChannel.class)
-                .option(ChannelOption.SO_BACKLOG, getServerConfig().getSoBacklog())
+//                .option(ChannelOption.SO_BACKLOG, getServerConfig().getSoBacklog())
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .childOption(ChannelOption.SO_SNDBUF, getServerConfig().getSoSendBuf())
-                .childOption(ChannelOption.SO_RCVBUF, getServerConfig().getSoRcvbuf())
-                .childOption(ChannelOption.TCP_NODELAY,getServerConfig().isTcpNodeLay())
+//                .childOption(ChannelOption.SO_SNDBUF, getServerConfig().getSoSendBuf())
+//                .childOption(ChannelOption.SO_RCVBUF, getServerConfig().getSoRcvbuf())
+//                .childOption(ChannelOption.TCP_NODELAY,getServerConfig().isTcpNodeLay())
                 .childHandler(getChannelInitializer())
                 .bind(port);
         f.addListener(new GenericFutureListener<ChannelFuture>() {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    log.info(String.format("success start server %s",port));
+                    log.info(String.format("success start server %s %s",port,f.channel()));
                 }
             }
         }).sync();
@@ -62,7 +63,7 @@ public abstract class Server {
         f.channel().closeFuture().addListener(new GenericFutureListener<ChannelFuture>() {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    log.info(String.format("success stop server %s",port));
+                    log.info(String.format("success stop server %s %s",port,f.channel()));
                     work.shutdownGracefully();
                     boss.shutdownGracefully();
                 }
