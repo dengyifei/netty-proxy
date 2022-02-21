@@ -35,9 +35,11 @@ public class ProxyTransmitClient extends Client {
         super(null,null);
     }
 
-
     @Autowired
     private ProxyTransmitClientConfig proxyTransmitClientConfig;
+
+    @Autowired
+    private ProxyRequestDataInboundHandler proxyRequestDataInboundHandler;
 
     @Override
     public ChannelInitializer<SocketChannel> getChannelInitializer() {
@@ -48,7 +50,7 @@ public class ProxyTransmitClient extends Client {
                 pip.addLast(new IdleStateHandler(10,7,0));
                 pip.addLast(heartBeatClientHandler);
                 pip.addLast(ProxyTcpProtocolDecoder.getSelf()); // 解析出对象
-                pip.addLast(new ProxyRequestDataInboundHandler()); // 处理对象
+                pip.addLast(proxyRequestDataInboundHandler); // 处理对象
 
                 pip.addLast(new ProxyTcpProtocolEncoder());
 

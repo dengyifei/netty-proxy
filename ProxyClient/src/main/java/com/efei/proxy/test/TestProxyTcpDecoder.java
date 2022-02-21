@@ -24,7 +24,7 @@ public class TestProxyTcpDecoder {
 
                 ChannelPipeline pip = ch.pipeline();
                 pip.addLast(ProxyTcpProtocolDecoder.getSelf());
-                pip.addLast(ProxyRequestDataInboundHandler.getSelf());
+                pip.addLast(new ProxyRequestDataInboundHandler());
             }
         });
         byte[] content = null;
@@ -59,7 +59,7 @@ public class TestProxyTcpDecoder {
                 ChannelPipeline pip = ch.pipeline();
                 //pip.addLast(new HttpRequestEncoder());
                 pip.addLast(ProxyTcpProtocolDecoder.getSelf());
-                pip.addLast(ProxyRequestDataInboundHandler.getSelf());
+                pip.addLast(new ProxyRequestDataInboundHandler());
             }
         });
         byte[] content = null;

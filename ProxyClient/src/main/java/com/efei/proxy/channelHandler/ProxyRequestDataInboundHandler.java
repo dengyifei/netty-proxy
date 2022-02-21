@@ -20,6 +20,7 @@ import io.netty.channel.*;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,23 +31,12 @@ import java.util.concurrent.locks.ReentrantLock;
  * 处理转发服务端转过来的数据,数据转发到目标服务
  */
 @ChannelHandler.Sharable
+@Slf4j
+@Component
 public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter {
-
-    private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyRequestDataInboundHandler.class);
-
-    private Lock lock = new ReentrantLock();
 
     @Autowired
     private ProxyHttpClientConfig proxyHttpClientConfig;
-
-    private static ProxyRequestDataInboundHandler self = null;
-
-    public static synchronized ProxyRequestDataInboundHandler getSelf() {
-        if (self == null) {
-            self = new ProxyRequestDataInboundHandler();
-        }
-        return self;
-    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, final Object msg) throws Exception {
@@ -55,15 +45,14 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
         if (msg2.getType() == Constant.MSG_HEART) {
 
         } else if (msg2.getType() == Constant.MSG_CONNECT) {
-            // 连接目标服务端
-            logger.info("连接目标服务端");
-            connectTargetServer(ctx, msg);
+            log.info("保存目标服务配置信息");
+            saveTargetServer(ctx, msg);
         } else if (msg2.getType() == Constant.MSG_HTTPPACKAGE) {
             transmitTotargetHttpServer(ctx, msg);
         } else if (msg2.getType() == Constant.MSG_TCPPACKAGE) {
             transmitTotargetTcpServer(ctx, msg);
         } else if (msg2.getType() == Constant.MSG_LOGIN) {
-            logger.info("登陆响应");
+            log.info("登陆响应");
         }
 
     }
@@ -78,17 +67,17 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
 
     /**
      * 连接目标服务端。
-     *
+     * 与目标建立连接已经改成下放到有请求包自动先连接,不需要服务端单独发连接目标服务端的请求，这里只是配置先发过来缓存起来
      * @param ctx
      * @param msg
      * @throws Exception
      */
-    public void connectTargetServer(ChannelHandlerContext ctx, final Object msg) throws Exception {
+    public void saveTargetServer(ChannelHandlerContext ctx, final Object msg) throws Exception {
 
         ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean) msg;
         byte[] content = msg2.getContent();
         ProxyTcpServerConfigBean config = JSONObject.parseObject(content, ProxyTcpServerConfigBean.class);
-        logger.info("缓存目标配置信息 {} {}", config.getTargetHost(), config.getTargetPort());
+        log.info("缓存目标配置信息 {} {}", config.getTargetHost(), config.getTargetPort());
         Cache.put(msg2.getKey() + "_config", config);
 
         // 响应
@@ -109,40 +98,13 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
      */
     public void transmitTotargetHttpServer(ChannelHandlerContext ctx, final Object msg) throws Exception {
         ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean) msg;
-        logger.debug(msg2.toStr());
+        log.debug(msg2.toStr());
         ProxyHttpClient c = Cache.get(msg2.getKey());
         if (c == null) {
-            lock.lock();
-            try {
-                c = Cache.get(msg2.getKey());
-                if (c == null) {
-                    c = (ProxyHttpClient) ClientFactory.buildCacheProxyHttpClient(msg2.getKey(), 0);
-                    c.setKey(msg2.getKey());
-                    c.bulidBootstrap(1);
-                    c.doConnect(proxyHttpClientConfig.getHost(), proxyHttpClientConfig.getPort());
-                }
-            } finally {
-                lock.unlock();
+            c = Cache.get(msg2.getKey());
+            if (c == null) {
+                c = (ProxyHttpClient) ClientFactory.buildCacheProxyHttpClient(msg2.getKey(), proxyHttpClientConfig);
             }
-        }
-        ByteBuf buf = Unpooled.buffer();
-        buf.writeBytes(msg2.getContent());
-        c.addMsg(buf);
-    }
-
-
-    public void transmitTotargetTcpServer(ChannelHandlerContext ctx, final Object msg) throws Exception {
-        ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean) msg;
-        logger.debug(msg2.toStr());
-        ProxyTcpClient c = Cache.get(msg2.getKey());
-        ProxyTcpServerConfigBean config = Cache.get(msg2.getKey() + "_config");
-
-        if (c == null) {
-            logger.info("与目标服务端连接{}", msg2.getKey());
-            c = (ProxyTcpClient) ClientFactory.buildCacheProxyTcpClient(msg2.getKey(), null, null);
-            c.setKey(msg2.getKey());
-            c.bulidBootstrap(1);
-            c.doConnect(config.getTargetHost(), config.getTargetPort());
         }
         int i = 10;
         while (i > 0) {
@@ -159,7 +121,37 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
             buf.writeBytes(msg2.getContent());
             c.sendMsg(buf);
         } else {
-            logger.info("连接目标客户端失败{}", msg2.getKey());
+            log.info("连接目标客户端失败{}", msg2.getKey());
+        }
+    }
+
+
+    public void transmitTotargetTcpServer(ChannelHandlerContext ctx, final Object msg) throws Exception {
+        ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean) msg;
+        log.debug(msg2.toStr());
+        ProxyTcpClient c = Cache.get(msg2.getKey());
+        ProxyTcpServerConfigBean config = Cache.get(msg2.getKey() + "_config");
+
+        if (c == null) {
+            log.info("与目标服务端连接{}", msg2.getKey());
+            c = (ProxyTcpClient) ClientFactory.buildCacheProxyTcpClient(msg2.getKey(), config);
+        }
+        int i = 10;
+        while (i > 0) {
+            if (c.isConnected) {
+                break;
+            } else {
+                i--;
+                Thread.sleep(500);
+            }
+        }
+
+        if (c.isConnected) {
+            ByteBuf buf = c.getChannel().alloc().buffer();
+            buf.writeBytes(msg2.getContent());
+            c.sendMsg(buf);
+        } else {
+            log.info("连接目标客户端失败{}", msg2.getKey());
         }
     }
 }

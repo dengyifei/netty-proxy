@@ -1,8 +1,10 @@
 package com.efei.proxy;
 
 import com.Client;
+import com.efei.proxy.common.bean.ProxyTcpServerConfigBean;
 import com.efei.proxy.common.cache.Cache;
 import com.efei.proxy.common.face.CallBack;
+import com.efei.proxy.config.ProxyHttpClientConfig;
 import io.netty.channel.Channel;
 
 /**
@@ -21,18 +23,24 @@ public class ClientFactory {
      * @param key
      * @return
      */
-    public static Client buildCacheProxyHttpClient(String key, long expire){
-        ProxyHttpClient p = Cache.get(key);
-        if(p==null){
-            p = new ProxyHttpClient();
+    public static synchronized Client buildCacheProxyHttpClient(String key, ProxyHttpClientConfig proxyHttpClientConfig){
+        ProxyHttpClient c = Cache.get(key);
+        if(c==null){
+            c = new ProxyHttpClient();
+            c.setKey(key);
+            c.bulidBootstrap(1);
+            c.doConnect(proxyHttpClientConfig.getHost(), proxyHttpClientConfig.getPort());
         }
-        return p;
+        return c;
     }
 
-    public static synchronized Client buildCacheProxyTcpClient(String key, CallBack<Channel> success, CallBack<Channel> fail){
+    public static synchronized Client buildCacheProxyTcpClient(String key, ProxyTcpServerConfigBean config){
         ProxyTcpClient c = Cache.get(key);
         if(c==null){
-            c = new ProxyTcpClient(success,fail);
+            c = new ProxyTcpClient(null,null);
+            c.setKey(key);
+            c.bulidBootstrap(1);
+            c.doConnect(config.getTargetHost(), config.getTargetPort());
             Cache.put(key, c);
         }
         return c;
