@@ -23,16 +23,14 @@ public class ClientFactory {
         ProxyHttpClient p = Cache.get(key);
         if(p==null){
             p = new ProxyHttpClient();
-            Cache.put(key,p,expire); //默认两分钟
         }
         return p;
     }
 
-    public static Client buildCacheProxyTcpClient(String key, long expire){
+    public static Client buildCacheProxyTcpClient(String key){
         ProxyTcpClient p = Cache.get(key);
         if(p==null){
             p = new ProxyTcpClient();
-            Cache.put(key,p,expire); //默认两分钟
         }
         return p;
     }

@@ -20,8 +20,6 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 /**
  * 用来接收用户端发来的数据并转发给转发客户端,目前是当成4层tcp处理
  */
-//@Component
-@ChannelHandler.Sharable
 public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyRequestDataHandler.class);
 
@@ -52,27 +50,24 @@ public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
         String userName = proxyTcpServerConfig.getUserName();
         Channel c = Cache.get(userName);
         if(c==null){
-            logger.info(" 客户端{}没有登陆,通道关闭",userName);
+            logger.info(" 传统通道客户端{}没有登陆,关闭",userName);
             ctx.close();
             return;
         }
         /**
-         *  通知客户端去连接
+         *  发送配置信息
          */
         byte[] content = JSON.toJSONBytes(proxyTcpServerConfig);
         ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_CONNECT,Constant.MSG_RQ,key,content.length,content);
-//        ByteBuf buf = ctx.alloc().buffer();
-//        b.toByteBuf(buf);
-        ChannelUtil.writeAndFlush(c,b).await(1*1000);
-
+        ChannelUtil.writeAndFlush(c,b).await(500);
         Boolean isConnect = ctx.channel().attr(Constant.KEY_CONNECT).get();
         int timeout =0;
         while (isConnect==null || !isConnect){
-            Thread.sleep(1000*1);
+            Thread.sleep(500);
             isConnect = ctx.channel().attr(Constant.KEY_CONNECT).get();
             timeout++;
             if(timeout>10){
-                logger.info("连接目标客户端超时");
+                logger.info("发送配信息失败");
                 ctx.close();
                 break;
             }
@@ -107,6 +102,6 @@ public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
         } else {
             logger.info("{} client is not line",userName);
         }
-        //ReferenceCountUtil.release(msg);
+        ReferenceCountUtil.release(msg);
     }
 }

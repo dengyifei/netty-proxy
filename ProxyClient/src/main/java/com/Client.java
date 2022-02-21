@@ -2,12 +2,10 @@ package com;
 
 import com.efei.proxy.config.ClientConfig;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
@@ -15,7 +13,7 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 public abstract class Client {
-    private static InternalLogger logger = InternalLoggerFactory.getInstance(Client.class);
+    private  InternalLogger logger = InternalLoggerFactory.getInstance(getClass());
 
     public abstract ChannelInitializer<SocketChannel> getChannelInitializer();
 
@@ -51,7 +49,7 @@ public abstract class Client {
         }
     }
     private Channel channel = null;
-    ChannelFuture clientChannelFuture;
+    private ChannelFuture clientChannelFuture;
 
     public Bootstrap bulidBootstrap(){
         work = new NioEventLoopGroup(1);

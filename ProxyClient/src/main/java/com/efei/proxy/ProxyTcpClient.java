@@ -92,25 +92,12 @@ public class ProxyTcpClient extends Client {
     @Override
     public void onConnectSuccess() {
         // 响应已经连接
-        JSONObject jo = new JSONObject();
-        jo.put("status",Constant.MSG_SUCCESS);
-        String reponse = jo.toJSONString();
-        byte[] content = reponse.getBytes(CharsetUtil.UTF_8);
-        ProxyTcpProtocolBean reponseMsg = new ProxyTcpProtocolBean(Constant.MSG_CONNECT,Constant.MSG_PRP,key,content.length,content);
-        Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
-        c.sendMsg(reponseMsg);
+
     }
 
     @Override
     public void onConnectFail() {
         // 响应已经连接
-        JSONObject jo = new JSONObject();
-        jo.put("status",Constant.MSG_FAIL);
-        String reponse = jo.toJSONString();
-        byte[] content = reponse.getBytes(CharsetUtil.UTF_8);
-        ProxyTcpProtocolBean reponseMsg = new ProxyTcpProtocolBean(Constant.MSG_CONNECT,Constant.MSG_PRP,key,content.length,content);
-        Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
-        c.sendMsg(reponseMsg);
     }
 
     @Override

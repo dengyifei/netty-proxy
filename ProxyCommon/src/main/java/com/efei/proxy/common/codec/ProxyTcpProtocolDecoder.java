@@ -11,7 +11,7 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 // @ChannelHandler.Sharable 不能添加固件线程不安全吧
 public class ProxyTcpProtocolDecoder extends LengthFieldBasedFrameDecoder {
 
-    private static final int MAX_FRAME_LENGTH = 1024 * 1024;  //最大长度
+    private static final int MAX_FRAME_LENGTH = 100*1024;  //最大长度
     private static final int LENGTH_FIELD_LENGTH = 4;  //长度字段所占的字节数
     private static final int LENGTH_FIELD_OFFSET = 8;  //长度偏移
     private static final int LENGTH_ADJUSTMENT = 0;

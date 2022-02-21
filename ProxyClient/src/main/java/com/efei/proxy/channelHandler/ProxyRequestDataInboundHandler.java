@@ -1,17 +1,23 @@
 package com.efei.proxy.channelHandler;
 
+import com.Client;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.efei.proxy.ClientFactory;
 import com.efei.proxy.ProxyHttpClient;
 import com.efei.proxy.ProxyTcpClient;
+import com.efei.proxy.ProxyTransmitClient;
 import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.bean.ProxyTcpServerConfigBean;
 import com.efei.proxy.common.cache.Cache;
+import com.efei.proxy.common.util.ChannelUtil;
+import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ProxyHttpClientConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
+import io.netty.util.CharsetUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,9 +50,7 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, final Object msg) throws Exception {
-        // super.channelRead(ctx, msg);
-        // testChannelRead(ctx,msg);
-        logger.info("接收到消息"+msg);
+
         ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean)msg;
         if(msg2.getType() == Constant.MSG_HEART){
 
@@ -58,6 +62,8 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
             transmitTotargetHttpServer(ctx,msg);
         } else if(msg2.getType() == Constant.MSG_TCPPACKAGE){
             transmitTotargetTcpServer(ctx,msg);
+        } else if(msg2.getType() == Constant.MSG_LOGIN){
+            logger.info("登陆响应");
         }
 
     }
@@ -81,22 +87,15 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
         ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean)msg;
         byte[] content = msg2.getContent();
         ProxyTcpServerConfigBean config = JSONObject.parseObject(content, ProxyTcpServerConfigBean.class);
-        logger.info("连接目标服务 {} {}",config.getTargetHost(),config.getTargetPort());
-        ProxyTcpClient c = Cache.get(msg2.getKey());
-        if(c==null){
-            lock.lock();
-            try{
-                c = Cache.get(msg2.getKey());
-                if(c==null){
-                    c = (ProxyTcpClient) ClientFactory.buildCacheProxyTcpClient(msg2.getKey(),0);
-                    c.setKey(msg2.getKey());
-                    c.bulidBootstrap();
-                    c.doConnect(config.getTargetHost(),config.getTargetPort());
-                }
-            }finally {
-                lock.unlock();
-            }
-        }
+        logger.info("缓存目标配置信息 {} {}",config.getTargetHost(),config.getTargetPort());
+        Cache.put(msg2.getKey()+"_config",config);
+
+        // 响应
+        JSONObject jo = new JSONObject();
+        jo.put("status",Constant.MSG_SUCCESS);
+        byte[] reponse = JSON.toJSONBytes(jo);
+        ProxyTcpProtocolBean reponseMsg = new ProxyTcpProtocolBean(Constant.MSG_CONNECT,Constant.MSG_PRP,msg2.getKey(),reponse.length,reponse);
+        ChannelUtil.writeAndFlush(ctx.channel(),reponseMsg);
     }
     /**
      * 将数据转发给目标服务
@@ -133,14 +132,19 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
         ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean)msg;
         logger.debug(msg2.toStr());
         ProxyTcpClient c = Cache.get(msg2.getKey());
+        ProxyTcpServerConfigBean config = Cache.get(msg2.getKey()+"_config");
         if(c==null){
-            logger.error("与目标连接失败");
-            return;
+            logger.info("与目标服务端连接");
+            c = Cache.get(msg2.getKey());
+            if(c==null){
+                c = (ProxyTcpClient) ClientFactory.buildCacheProxyTcpClient(msg2.getKey());
+                c.setKey(msg2.getKey());
+                c.bulidBootstrap();
+                c.doConnect(config.getTargetHost(),config.getTargetPort());
+            }
         }
-        //ByteBuf buf = Unpooled.buffer();
-        ByteBuf buf = ctx.alloc().buffer();
+        ByteBuf buf = c.getChannel().alloc().buffer();
         buf.writeBytes(msg2.getContent());
-        //c.addMsg(buf);
         c.sendMsg(buf);
     }
 }
