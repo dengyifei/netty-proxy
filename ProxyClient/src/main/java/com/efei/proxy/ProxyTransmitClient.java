@@ -9,7 +9,6 @@ import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.codec.ProxyTcpProtocolDecoder;
 import com.efei.proxy.common.codec.ProxyTcpProtocolEncoder;
 import com.efei.proxy.common.util.MathUtil;
-import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ClientConfig;
 import com.efei.proxy.config.ProxyTransmitClientConfig;
 import io.netty.channel.ChannelInitializer;
@@ -19,18 +18,22 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class ProxyTransmitClient extends Client {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyTransmitClient.class);
-    //private ProxyTcpProtocolDecoder proxyTcpDecoder = ProxyTcpProtocolDecoder.getSelf();
 
     @Autowired
     private HeartBeatClientHandler heartBeatClientHandler;
 
+    public ProxyTransmitClient(){
+        super(null,null);
+    }
 
 
     @Autowired
@@ -80,9 +83,4 @@ public class ProxyTransmitClient extends Client {
     public ClientConfig getClientConfig() {
         return proxyTransmitClientConfig;
     }
-    //    public static void start(String[] args) throws InterruptedException {
-//        ProxyTransmitClient c = new ProxyTransmitClient();
-//        c.connect("127.0.0.1",5000);
-//        Cache.put(c.getClass().getSimpleName(),c);
-//    }
 }

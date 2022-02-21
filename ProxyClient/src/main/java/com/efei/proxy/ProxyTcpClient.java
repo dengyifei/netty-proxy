@@ -1,34 +1,36 @@
 package com.efei.proxy;
 
 import com.Client;
-import com.alibaba.fastjson.JSONObject;
 import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.cache.Cache;
 import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ClientConfig;
 import com.efei.proxy.config.ProxyTcpClientConfig;
+import com.efei.proxy.common.face.CallBack;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
+import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
-import io.netty.util.internal.logging.InternalLogger;
-import io.netty.util.internal.logging.InternalLoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+
+
 
 /**
  * tcp连接
  */
+@Slf4j
 public class ProxyTcpClient extends Client {
-    private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyTcpClient.class);
+
 
     private String key; //
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public ProxyTcpClient(CallBack<Channel> succ, CallBack<Channel> fail){
+        super(succ,fail);
     }
 
     private ChannelInboundHandlerAdapter reponseDataInboundHandler = new ChannelInboundHandlerAdapter(){
@@ -41,7 +43,7 @@ public class ProxyTcpClient extends Client {
             //System.out.println("xxx:"+content);
             if(content!=null){
                 ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_TCPPACKAGE,Constant.MSG_PRP,key,content.length,content);
-                logger.debug(b.toStr());
+                log.debug(b.toStr());
                 //Client c = Cache.get(ProxyTransmitClient.class.getSimpleName());
                 Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
                 c.sendMsg(b);
@@ -66,7 +68,7 @@ public class ProxyTcpClient extends Client {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            logger.error("异常退出",cause);
+            log.error("异常退出",cause);
             ctx.close();
             Client c = Cache.remove(key);
             super.exceptionCaught(ctx, cause);
@@ -97,12 +99,14 @@ public class ProxyTcpClient extends Client {
 
     @Override
     public void onConnectFail() {
-        // 响应已经连接
+        // 连接失败
+        Client c = Cache.remove(key);
+        log.info("cache removed:{}",key);
     }
 
     @Override
     public void onClosed() {
         Client c = Cache.remove(key);
-        logger.info("{}cache removed",key);
+        log.info("cache removed:{}",key);
     }
 }

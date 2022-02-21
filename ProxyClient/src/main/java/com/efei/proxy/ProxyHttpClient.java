@@ -34,6 +34,9 @@ public class ProxyHttpClient extends Client {
 
     //private AttributeKey<Integer> numreadsKey = AttributeKey.valueOf("numreadsKey");
 
+    public ProxyHttpClient(){
+        super(null,null);
+    }
     private ChannelInboundHandlerAdapter reponseDataInboundHandler = new ChannelInboundHandlerAdapter(){
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

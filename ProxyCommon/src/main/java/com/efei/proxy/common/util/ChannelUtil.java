@@ -20,8 +20,4 @@ public class ChannelUtil {
             }
         });
     }
-
-    public static ChannelFuture writeAndFlush(Channel channel,String content){
-        return writeAndFlush(channel,content.getBytes());
-    }
 }

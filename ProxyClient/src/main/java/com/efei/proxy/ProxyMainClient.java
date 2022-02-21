@@ -6,6 +6,7 @@ import com.efei.proxy.config.ProxyHttpClientConfig;
 import com.efei.proxy.config.ProxyTransmitClientConfig;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -20,6 +21,7 @@ import java.util.Timer;
  * -server -Xms500m -Xmx500m -XX:NewRatio=5 -XX:SurvivorRatio=8 -XX:+PrintGCDateStamps -XX:+PrintGCDetails -Xloggc:log/gc.log -XX:+UseConcMarkSweepGC -DdomainUser=xefei -Dhost=127.0.0.1 -Dport=8788
  */
 @Component
+@Slf4j
 public class ProxyMainClient {
 //    public static void main(String[] args) {
 //        int i = SystemPropertyUtil.getInt(
@@ -42,7 +44,6 @@ public class ProxyMainClient {
 //        }
 //    }
 
-    private static InternalLogger logger = InternalLoggerFactory.getInstance(ProxyMainClient.class);
 
     private static  ApplicationContext applicationContext;
 
@@ -67,7 +68,7 @@ public class ProxyMainClient {
 
         ProxyMainClient app = context.getBean(ProxyMainClient.class);
         Runtime.getRuntime().addShutdownHook(new Thread(()-> {
-            logger.warn("程序退出");
+            log.info("程序退出");
             context.close();
         }));
         app.start();
@@ -87,7 +88,7 @@ public class ProxyMainClient {
         if(!StringUtils.isEmpty(port)){
             proxyHttpClientConfig.setPort(Integer.valueOf(port));
         }
-        proxyTransmitClient.bulidBootstrap();
+        proxyTransmitClient.bulidBootstrap(1);
         proxyTransmitClient.doConnect(proxyTransmitClientConfig.getHost(),proxyTransmitClientConfig.getPort());
         // 监控缓存
 //        timer.schedule(new TimerTask(){
