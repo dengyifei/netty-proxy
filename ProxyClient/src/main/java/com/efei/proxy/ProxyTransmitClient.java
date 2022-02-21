@@ -28,18 +28,22 @@ public class ProxyTransmitClient extends Client {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyTransmitClient.class);
     //private ProxyTcpProtocolDecoder proxyTcpDecoder = ProxyTcpProtocolDecoder.getSelf();
 
+    @Autowired
+    private HeartBeatClientHandler heartBeatClientHandler;
+
 
 
     @Autowired
     private ProxyTransmitClientConfig proxyTransmitClientConfig;
+
     @Override
     public ChannelInitializer<SocketChannel> getChannelInitializer() {
         return new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pip = ch.pipeline();
-//                pip.addLast(new IdleStateHandler(10,7,0));
-//                pip.addLast(new HeartBeatClientHandler());
+                pip.addLast(new IdleStateHandler(10,7,0));
+                pip.addLast(heartBeatClientHandler);
                 pip.addLast(ProxyTcpProtocolDecoder.getSelf()); // 解析出对象
                 pip.addLast(new ProxyRequestDataInboundHandler()); // 处理对象
 

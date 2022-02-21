@@ -72,7 +72,7 @@ public abstract class Server {
     }
 
     public void stop(){
-        log.info("stop server...");
+        log.info("{} stop server...",channel);
         channel.close();
     }
 }

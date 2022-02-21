@@ -9,7 +9,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.util.ResourceUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.util.SystemPropertyUtils;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +31,13 @@ public class ProxyConfiguration {
     public  static PropertySourcesPlaceholderConfigurer createProperties() {
         PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
-        yaml.setResources(new ClassPathResource(config_file));
+        String configPath = System.getProperty("configPath");
+        log.info("configPath={}",configPath);
+        if(StringUtils.isEmpty(configPath)){
+            yaml.setResources(new ClassPathResource(config_file));
+        }else{
+            yaml.setResources(new FileSystemResource(configPath));
+        }
         Properties p = yaml.getObject();
         propertySourcesPlaceholderConfigurer.setProperties(yaml.getObject());
         return propertySourcesPlaceholderConfigurer;
@@ -36,7 +47,13 @@ public class ProxyConfiguration {
     public ProxyTcpServerManager getServerPort2RealServer() {
         ProxyTcpServerManager proxyTcpServerManager = new ProxyTcpServerManager();
         YamlMapFactoryBean yaml = new YamlMapFactoryBean();
-        yaml.setResources(new ClassPathResource(config_file));
+        String configPath = System.getProperty("configPath");
+        log.info("configPath={}",configPath);
+        if(StringUtils.isEmpty(configPath)){
+            yaml.setResources(new ClassPathResource(config_file));
+        }else{
+            yaml.setResources(new FileSystemResource(configPath));
+        }
         Map<String, Object> m = yaml.getObject();
         List<Map<String,Object>> m2 = new ArrayList<Map<String,Object>>();
         List<Map<String,Object>> proxy = (List<Map<String,Object>>) m.getOrDefault("proxyTcpServer", m2);

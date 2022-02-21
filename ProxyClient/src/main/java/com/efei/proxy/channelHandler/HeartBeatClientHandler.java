@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 
 @ChannelHandler.Sharable
+@Component
 public class HeartBeatClientHandler extends ChannelInboundHandlerAdapter {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(HeartBeatClientHandler.class);

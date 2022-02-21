@@ -1,12 +1,15 @@
 package com.efei.proxy;
 
 import com.Server;
+import com.efei.proxy.channelHandler.HeartBeatServerHandler;
 import com.efei.proxy.channelHandler.ProxyRequestDataHandler;
+import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ProxyTcpServerConfig;
 import com.efei.proxy.config.ServerConfig;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * tcp代理服务，1.负责接收用户客户端的请求数据，并将数据通过TransmitServer 转发到目标客户端。
@@ -26,6 +29,8 @@ public class ProxyTcpServer extends Server {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pip = ch.pipeline();
+                pip.addLast(new IdleStateHandler(120,0,0));
+                pip.addLast(SpringConfigTool.getBean(HeartBeatServerHandler.class));
                 pip.addLast(new ProxyRequestDataHandler(proxyTcpServerConfig)); // 以4层数据处理
 
                 //pip.addLast(new HttpClientCodec());

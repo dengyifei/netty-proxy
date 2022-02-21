@@ -103,6 +103,6 @@ public class ProxyTcpClient extends Client {
     @Override
     public void onClosed() {
         Client c = Cache.remove(key);
-        logger.info(c.getChannel() + "cache removed");
+        logger.info("{}cache removed",key);
     }
 }

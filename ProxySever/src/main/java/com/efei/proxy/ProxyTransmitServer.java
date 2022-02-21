@@ -31,14 +31,16 @@ public class ProxyTransmitServer extends Server{
     private ProxyTransmitServerConfig proxyTransmitServerConfig;
 
     //private IdleStateHandler idleStateHandler =  new IdleStateHandler(5,0,0);
+    @Autowired
+    private HeartBeatServerHandler heartBeatServerHandler;
 
     public ChannelInitializer<SocketChannel> getChannelInitializer() {
         return new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pip = ch.pipeline();
-//                pip.addLast(new IdleStateHandler(10,0,0));
-//                pip.addLast(new HeartBeatServerHandler());
+                pip.addLast(new IdleStateHandler(10,0,0));
+                pip.addLast(heartBeatServerHandler);
                 pip.addLast(ProxyTcpProtocolDecoder.getSelf());
                 pip.addLast(new LoginChannelHandler());
                 pip.addLast(new ProxyReponseDataHandler());

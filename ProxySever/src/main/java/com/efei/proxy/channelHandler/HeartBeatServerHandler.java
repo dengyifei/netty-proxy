@@ -14,16 +14,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @ChannelHandler.Sharable
+@Component
 public class HeartBeatServerHandler extends ChannelInboundHandlerAdapter {
     private static InternalLogger logger = InternalLoggerFactory.getInstance(HeartBeatServerHandler.class);
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        logger.debug("已经好久未收到客户端的消息了！");
+        logger.info("已经好久未收到客户端的消息了！");
         if (evt instanceof IdleStateEvent){
             IdleStateEvent event = (IdleStateEvent)evt;
             if (event.state()== IdleState.READER_IDLE){
-                logger.debug(ctx.channel() +"关闭这个不活跃通道！");
+                logger.info(ctx.channel() +"关闭这个不活跃通道！");
                 ctx.close();
             }
         }else {
@@ -41,6 +42,6 @@ public class HeartBeatServerHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
         String username = ctx.channel().attr(Constant.KEY_USERNAME).get();
         Cache.remove(username);
-        logger.debug(ctx.channel()+"is closed");
+        logger.info(ctx.channel()+"is closed");
     }
 }

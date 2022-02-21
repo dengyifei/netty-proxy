@@ -133,18 +133,36 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
         logger.debug(msg2.toStr());
         ProxyTcpClient c = Cache.get(msg2.getKey());
         ProxyTcpServerConfigBean config = Cache.get(msg2.getKey()+"_config");
+
+        boolean isFirst = false;
         if(c==null){
-            logger.info("与目标服务端连接");
+            logger.info("与目标服务端连接{}",msg2.getKey());
             c = Cache.get(msg2.getKey());
             if(c==null){
                 c = (ProxyTcpClient) ClientFactory.buildCacheProxyTcpClient(msg2.getKey());
                 c.setKey(msg2.getKey());
                 c.bulidBootstrap();
                 c.doConnect(config.getTargetHost(),config.getTargetPort());
+                Cache.put(msg2.getKey(),c);
+                isFirst = true;
             }
         }
-        ByteBuf buf = c.getChannel().alloc().buffer();
-        buf.writeBytes(msg2.getContent());
-        c.sendMsg(buf);
+        int i = 10;
+        while (isFirst && i>0){
+            if(c.isConnected){
+                break;
+            } else{
+                i--;
+                Thread.sleep(500);
+            }
+        }
+
+        if(c.isConnected){
+            ByteBuf buf = c.getChannel().alloc().buffer();
+            buf.writeBytes(msg2.getContent());
+            c.sendMsg(buf);
+        }else {
+            logger.info("连接目标客户端失败{}",msg2.getKey());
+        }
     }
 }
