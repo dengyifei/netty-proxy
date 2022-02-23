@@ -9,7 +9,6 @@ import com.efei.proxy.common.util.MathUtil;
 import com.efei.proxy.config.ProxyTcpServerConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;

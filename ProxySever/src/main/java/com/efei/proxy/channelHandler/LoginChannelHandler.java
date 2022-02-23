@@ -13,15 +13,15 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
  * 接收客户端连接，保存与转发客户端的channel.
  */
 @ChannelHandler.Sharable
+@Slf4j
 public class LoginChannelHandler extends ChannelInboundHandlerAdapter {
-
-    private static final InternalLogger logger = InternalLoggerFactory.getInstance(LoginChannelHandler.class);
 
 
     @Override
@@ -48,7 +48,7 @@ public class LoginChannelHandler extends ChannelInboundHandlerAdapter {
     private void login(ChannelHandlerContext ctx, ProxyTcpProtocolBean msg){
         //String key = msg.getKey();
         String content = msg.getContentStr();
-        logger.info("login str:{}",content);
+        log.info("login str:{}",content);
         JSONObject jo = JSON.parseObject(content);
         String username = jo.getString("username");
         ctx.channel().attr(Constant.KEY_USERNAME).set(username);

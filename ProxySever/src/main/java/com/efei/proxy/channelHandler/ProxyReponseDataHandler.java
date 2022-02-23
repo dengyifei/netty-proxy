@@ -12,16 +12,17 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
  * 响应数据到用户channel
  */
 @ChannelHandler.Sharable
+@Slf4j
 public class ProxyReponseDataHandler extends ChannelInboundHandlerAdapter {
 
-    private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyReponseDataHandler.class);
-    private static ProxyReponseDataHandler self = null;
+//    private static ProxyReponseDataHandler self = null;
 
 //    public synchronized  static ProxyReponseDataHandler getSelf(){
 //        return self == null ? self = new ProxyReponseDataHandler() : self;
@@ -41,7 +42,7 @@ public class ProxyReponseDataHandler extends ChannelInboundHandlerAdapter {
         }
         else if(msg2.getType() == Constant.MSG_CONNECT) {
             // 标志客户端与和目标服务端已经连接已经连接
-            logger.debug(msg2.toStr());
+            log.debug(msg2.toStr());
             String key = msg2.getKey();
             Channel userChannel = Cache.get(key);
             userChannel.attr(Constant.KEY_CONNECT).set(Boolean.TRUE);
@@ -54,7 +55,7 @@ public class ProxyReponseDataHandler extends ChannelInboundHandlerAdapter {
      * @param msg
      */
     private void transmitToUserChannel(ChannelHandlerContext ctx, ProxyTcpProtocolBean msg){
-        logger.debug(msg.toStr());
+        log.debug(msg.toStr());
         String key = msg.getKey();
         Channel userChannel = Cache.get(key);
 //        ByteBuf buf = Unpooled.buffer();
