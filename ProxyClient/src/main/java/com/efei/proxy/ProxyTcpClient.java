@@ -42,7 +42,7 @@ public class ProxyTcpClient extends Client {
             in.readBytes(content);
             //System.out.println("xxx:"+content);
             if(content!=null){
-                ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_TCPPACKAGE,Constant.MSG_PRP,key,content.length,content);
+                ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_TCP_PACKAGE,Constant.MSG_PRP,key,content.length,content);
                 log.debug(b.toStr());
                 //Client c = Cache.get(ProxyTransmitClient.class.getSimpleName());
                 Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);

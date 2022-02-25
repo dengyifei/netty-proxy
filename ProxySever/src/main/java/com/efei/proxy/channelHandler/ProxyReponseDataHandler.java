@@ -5,15 +5,11 @@ import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.cache.Cache;
 import com.efei.proxy.common.util.ChannelUtil;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.util.internal.logging.InternalLogger;
-import io.netty.util.internal.logging.InternalLoggerFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 /**
  * 响应数据到用户channel
@@ -35,9 +31,9 @@ public class ProxyReponseDataHandler extends ChannelInboundHandlerAdapter {
             super.channelRead(ctx, msg);
         }
         ProxyTcpProtocolBean msg2 = (ProxyTcpProtocolBean)msg;
-        if(msg2.getType() == Constant.MSG_HTTPPACKAGE){
+        if(msg2.getType() == Constant.MSG_HTTP_PACKAGE){
             transmitToUserChannel(ctx,msg2);
-        } else if(msg2.getType() == Constant.MSG_TCPPACKAGE){
+        } else if(msg2.getType() == Constant.MSG_TCP_PACKAGE){
             transmitToUserChannel(ctx,msg2);
         }
         else if(msg2.getType() == Constant.MSG_CONNECT) {

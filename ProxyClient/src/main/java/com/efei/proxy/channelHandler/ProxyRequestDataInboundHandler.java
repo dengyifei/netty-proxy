@@ -1,31 +1,22 @@
 package com.efei.proxy.channelHandler;
 
-import com.Client;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.efei.proxy.ClientFactory;
 import com.efei.proxy.ProxyHttpClient;
 import com.efei.proxy.ProxyTcpClient;
-import com.efei.proxy.ProxyTransmitClient;
 import com.efei.proxy.common.Constant;
 import com.efei.proxy.common.bean.ProxyTcpProtocolBean;
 import com.efei.proxy.common.bean.ProxyTcpServerConfigBean;
 import com.efei.proxy.common.cache.Cache;
 import com.efei.proxy.common.util.ChannelUtil;
-import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ProxyHttpClientConfig;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.util.CharsetUtil;
-import io.netty.util.internal.logging.InternalLogger;
-import io.netty.util.internal.logging.InternalLoggerFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import org.springframework.util.StringUtils;
 
 /**
  * 处理转发服务端转过来的数据,数据转发到目标服务
@@ -47,9 +38,13 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
         } else if (msg2.getType() == Constant.MSG_CONNECT) {
             log.info("保存目标服务配置信息");
             saveTargetServer(ctx, msg);
-        } else if (msg2.getType() == Constant.MSG_HTTPPACKAGE) {
+        } else if (msg2.getType() == Constant.MSG_HTTP_PACKAGE_REQ_LINE) {
             transmitTotargetHttpServer(ctx, msg);
-        } else if (msg2.getType() == Constant.MSG_TCPPACKAGE) {
+        } else if (msg2.getType() == Constant.MSG_HTTP_PACKAGE_REQ_HEADER) {
+            transmitTotargetHttpServer(ctx, msg);
+        } else if (msg2.getType() == Constant.MSG_HTTP_PACKAGE_REQ_BODY) {
+            transmitTotargetHttpServer(ctx, msg);
+        } else if (msg2.getType() == Constant.MSG_TCP_PACKAGE) {
             transmitTotargetTcpServer(ctx, msg);
         } else if (msg2.getType() == Constant.MSG_LOGIN) {
             log.info("登陆响应");
@@ -101,10 +96,7 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
         log.debug(msg2.toStr());
         ProxyHttpClient c = Cache.get(msg2.getKey());
         if (c == null) {
-            c = Cache.get(msg2.getKey());
-            if (c == null) {
                 c = (ProxyHttpClient) ClientFactory.buildCacheProxyHttpClient(msg2.getKey(), proxyHttpClientConfig);
-            }
         }
         int i = 10;
         while (i > 0) {
@@ -118,6 +110,7 @@ public class ProxyRequestDataInboundHandler extends ChannelInboundHandlerAdapter
 
         if (c.isConnected) {
             ByteBuf buf = c.getChannel().alloc().buffer();
+            log.debug("\r\n"+new String(msg2.getContent()));
             buf.writeBytes(msg2.getContent());
             c.sendMsg(buf);
         } else {

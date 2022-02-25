@@ -86,6 +86,7 @@ public class TestProxyTcpDecoder {
         sb.append("Host: 192.168.50.3:8788\r\n");
         sb.append("User-Agent: AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36 acrabsoft.rpc.1.1\r\n");
         sb.append("\r\n");
+        System.out.println(sb);
         try {
             content = sb.toString().getBytes("UTF-8");
         } catch (UnsupportedEncodingException ex) {

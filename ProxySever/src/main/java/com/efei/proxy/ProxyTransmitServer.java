@@ -4,13 +4,12 @@ import com.Server;
 import com.efei.proxy.channelHandler.HeartBeatServerHandler;
 import com.efei.proxy.channelHandler.LoginChannelHandler;
 import com.efei.proxy.channelHandler.ProxyReponseDataHandler;
-import com.efei.proxy.common.codec.HttpRequestTransmitEncoder;
 import com.efei.proxy.common.codec.ProxyTcpProtocolDecoder;
 import com.efei.proxy.common.codec.ProxyTcpProtocolEncoder;
-import com.efei.proxy.common.util.SpringConfigTool;
 import com.efei.proxy.config.ProxyTransmitServerConfig;
 import com.efei.proxy.config.ServerConfig;
-import io.netty.channel.*;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.internal.logging.InternalLogger;
@@ -30,7 +29,6 @@ public class ProxyTransmitServer extends Server{
     @Autowired
     private ProxyTransmitServerConfig proxyTransmitServerConfig;
 
-    //private IdleStateHandler idleStateHandler =  new IdleStateHandler(5,0,0);
     @Autowired
     private HeartBeatServerHandler heartBeatServerHandler;
 

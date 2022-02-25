@@ -11,10 +11,15 @@ import com.efei.proxy.config.ProxyHttpClientConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.MessageToMessageDecoder;
+import io.netty.handler.codec.http.*;
+import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -23,8 +28,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * 与目标服务连接的客户端
  */
+@Slf4j
 public class ProxyHttpClient extends Client {
-    private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyHttpClient.class);
     private String key; //
 
     // 存放请求数据
@@ -46,8 +51,8 @@ public class ProxyHttpClient extends Client {
             in.readBytes(content);
             //System.out.println("xxx:"+content);
             if(content!=null){
-                ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_HTTPPACKAGE,Constant.MSG_PRP,key,content.length,content);
-                logger.debug(b.toStr());
+                ProxyTcpProtocolBean b = new ProxyTcpProtocolBean(Constant.MSG_HTTP_PACKAGE,Constant.MSG_PRP,key,content.length,content);
+                log.debug(b.toStr());
                 //Client c = Cache.get(ProxyTransmitClient.class.getSimpleName());
                 Client c = SpringConfigTool.getBean(ProxyTransmitClient.class);
                 c.sendMsg(b);
@@ -83,7 +88,20 @@ public class ProxyHttpClient extends Client {
 //                    }
 //                });
 
+                //pip.addLast(new HttpRequestEncoder());
                 pip.addLast(reponseDataInboundHandler);
+//                pip.addLast(new HttpResponseDecoder());
+//                pip.addLast(new HttpObjectAggregator(2*1024));
+//                pip.addLast(new MessageToMessageDecoder<HttpObject>(){
+//
+//                    protected void decode(ChannelHandlerContext ctx, HttpObject msg, List<Object> out) throws Exception {
+//                        FullHttpResponse msg2 = (FullHttpResponse)msg;
+//                        String head = msg2.headers().toString();
+//                        System.out.println(String.format("head:%s",head));
+//                        String sb = msg2.content().toString(CharsetUtil.UTF_8);
+//                        System.out.println(String.format("body:%s",sb));
+//                    }
+//                });
             }
         };
     }
@@ -112,7 +130,7 @@ public class ProxyHttpClient extends Client {
     public void onClosed() {
         isRun.set(false); // 停止发数据线程
         Client c = Cache.remove(key);
-        logger.info(c.getChannel() + "cache removed");
+        log.info("cache removed:{}",key);
     }
 
     @Override

@@ -107,4 +107,8 @@ public abstract class Client {
     public void sendMsg(Object msg,GenericFutureListener<ChannelFuture> listener) {
         this.channel.writeAndFlush(msg).addListener(listener);
     }
+
+    public Channel getChannel(){
+        return channel;
+    }
 }

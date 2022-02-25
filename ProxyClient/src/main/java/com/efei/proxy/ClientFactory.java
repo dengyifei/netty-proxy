@@ -30,6 +30,7 @@ public class ClientFactory {
             c.setKey(key);
             c.bulidBootstrap(1);
             c.doConnect(proxyHttpClientConfig.getHost(), proxyHttpClientConfig.getPort());
+            Cache.put(key, c);
         }
         return c;
     }

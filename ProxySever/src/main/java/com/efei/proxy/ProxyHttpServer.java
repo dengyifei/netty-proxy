@@ -10,6 +10,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,11 +18,15 @@ import org.springframework.stereotype.Component;
  * 对外访问入口的http代理服务
  */
 @Component
+@Slf4j
 public class ProxyHttpServer extends Server {
 
 
     @Autowired
     private ProxyHttpServerConfig proxyHttpServerConfig;
+
+    @Autowired
+    private ProxyRequestHttpDataHandler proxyRequestHttpDataHandler;
 
     public ChannelInitializer<SocketChannel> getChannelInitializer() {
 
@@ -39,7 +44,7 @@ public class ProxyHttpServer extends Server {
                 pip.addLast(new HttpRequestDecoder());
                 pip.addLast(new HttpObjectAggregator(proxyHttpServerConfig.getMaxFrameLength()));
 
-                pip.addLast(new ProxyRequestHttpDataHandler());
+                pip.addLast(proxyRequestHttpDataHandler);
                 //pip.addLast(new HttpResponseEncoder());
                 //pip.addLast(SpringConfigTool.getBean(HttpResponseTransmitEncoder.class));
 
