@@ -68,7 +68,7 @@ public class ProxyTcpClient extends Client {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            log.error("异常退出",cause);
+            log.info("异常退出");
             ctx.close();
             Client c = Cache.remove(key);
             super.exceptionCaught(ctx, cause);

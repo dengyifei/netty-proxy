@@ -14,13 +14,14 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
  * 用来接收用户端发来的数据并转发给转发客户端,目前是当成4层tcp处理
  */
+@Slf4j
 public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
-    private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyRequestDataHandler.class);
 
     private ProxyTcpServerConfig proxyTcpServerConfig;
 
@@ -31,13 +32,12 @@ public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        logger.debug(ctx.channel()+"is channelActive");
     }
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
-        logger.info(ctx.channel() + "创建连接");
+        log.info(ctx.channel() + "创建连接");
         String key = ctx.channel().attr(Constant.KEY_USERCHANNEL).get();
         if(key == null){
             key = MathUtil.getRandomString(6);
@@ -49,7 +49,7 @@ public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
         String userName = proxyTcpServerConfig.getUserName();
         Channel c = Cache.get(userName);
         if(c==null){
-            logger.info(" 传统通道客户端{}没有登陆,关闭",userName);
+            log.info(" 传统通道客户端{}没有登陆,关闭",userName);
             ctx.close();
             return;
         }
@@ -66,7 +66,7 @@ public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
             isConnect = ctx.channel().attr(Constant.KEY_CONNECT).get();
             timeout++;
             if(timeout>10){
-                logger.info("发送配信息失败");
+                log.info("发送配信息失败");
                 ctx.close();
                 break;
             }
@@ -77,14 +77,14 @@ public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         super.channelUnregistered(ctx);
         Cache.remove(ctx.channel().attr(Constant.KEY_USERCHANNEL).get());
-        logger.info( ctx.channel() +" channelUnregistered");
+        log.info( ctx.channel() +" channelUnregistered");
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         Cache.remove(ctx.channel().attr(Constant.KEY_USERCHANNEL).get());
-        logger.info( ctx.channel() +" channelInactive");
+        log.info( ctx.channel() +" channelInactive");
     }
 
     @Override
@@ -99,7 +99,7 @@ public class ProxyRequestDataHandler extends ChannelInboundHandlerAdapter {
         if(c!=null){
             ChannelUtil.writeAndFlush(c,b);
         } else {
-            logger.info("{} client is not line",userName);
+            log.info("{} client is not line",userName);
         }
         ReferenceCountUtil.release(msg);
     }

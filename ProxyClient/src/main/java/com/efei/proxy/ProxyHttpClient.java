@@ -30,14 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Slf4j
 public class ProxyHttpClient extends Client {
-    private String key; //
-
-    // 存放请求数据
-    private BlockingQueue<ByteBuf> basket = new LinkedBlockingQueue<ByteBuf>(3);
-
-    AtomicBoolean isRun = new AtomicBoolean(true);
-
-    //private AttributeKey<Integer> numreadsKey = AttributeKey.valueOf("numreadsKey");
+    private String key;
 
     public ProxyHttpClient(){
         super(null,null);
@@ -66,6 +59,21 @@ public class ProxyHttpClient extends Client {
         @Override
         public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
             super.channelReadComplete(ctx);
+        }
+
+        @Override
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            ctx.close();
+            Client c = Cache.remove(key);
+            super.channelInactive(ctx);
+        }
+
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            log.info("异常退出");
+            ctx.close();
+            Client c = Cache.remove(key);
+            super.exceptionCaught(ctx, cause);
         }
     };
     @Override
@@ -108,27 +116,17 @@ public class ProxyHttpClient extends Client {
 
     @Override
     public void onConnectSuccess() {
-
-        Thread t1 = new Thread(()->{
-            while(isRun.get()) {
-                try {
-                    //ByteBuf msg = this.basket.take();
-                    ByteBuf msg = this.basket.poll(60, TimeUnit.SECONDS);
-                    if(msg!=null){
-                        sendMsg(msg);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        t1.setName("sendQueueData");
-        t1.start();
     }
 
     @Override
     public void onClosed() {
-        isRun.set(false); // 停止发数据线程
+        Client c = Cache.remove(key);
+        log.info("cache removed:{}",key);
+    }
+
+    @Override
+    public void onConnectFail() {
+        // 连接失败
         Client c = Cache.remove(key);
         log.info("cache removed:{}",key);
     }
@@ -136,10 +134,6 @@ public class ProxyHttpClient extends Client {
     @Override
     public ClientConfig getClientConfig() {
         return SpringConfigTool.getBean(ProxyHttpClientConfig.class);
-    }
-
-    public void addMsg(ByteBuf msg){
-        this.basket.add(msg);
     }
 
     public String getKey() {

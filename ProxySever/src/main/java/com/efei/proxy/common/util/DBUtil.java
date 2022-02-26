@@ -1,32 +1,20 @@
 package com.efei.proxy.common.util;
 
-import io.netty.util.internal.logging.InternalLogger;
-import io.netty.util.internal.logging.InternalLoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+import javax.sql.DataSource;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import javax.sql.DataSource;
-
+@Slf4j
 public class DBUtil {
     // 设置数据源(使用C3P0数据库连接池)
     private static DataSource dataSource = null;
-    //private static Logger logger = Logger.getLogger("DBUtil");
-    private static InternalLogger logger = InternalLoggerFactory.getInstance(DBUtil.class);
     private static ThreadLocal<Connection> tl = new ThreadLocal<Connection>();
 
     public static DataSource getDataSource() {
@@ -58,7 +46,7 @@ public class DBUtil {
             conn = getConnection();
             o = this.execute(conn, sql, paramList, falg);
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            log.info(e.getMessage());
             throw new Exception(e);
         } finally {
             closeConn(conn);
@@ -74,7 +62,7 @@ public class DBUtil {
      */
     public Object execute(Connection conn, String sql, Object[] paramList, boolean falg) throws Exception {
         if (sql == null || sql.trim().equals("")) {
-            logger.info("parameter is valid!");
+            log.info("parameter is valid!");
         }
 
         PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -94,7 +82,7 @@ public class DBUtil {
                 System.out.println("数据主键地址：" + id);
             }
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            log.info(e.getMessage());
             throw new Exception(e);
         } finally {
             closeStatement(pstmt);
@@ -113,7 +101,7 @@ public class DBUtil {
      */
     public int execute(String sql, Object[] paramList) throws Exception {
         if (sql == null || sql.trim().equals("")) {
-            logger.info("parameter is valid!");
+            log.info("parameter is valid!");
         }
 
         Connection conn = null;
@@ -128,7 +116,7 @@ public class DBUtil {
             }
             result = pstmt.executeUpdate();
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            log.info(e.getMessage());
             throw new Exception(e);
         } finally {
             closeStatement(pstmt);
@@ -149,7 +137,7 @@ public class DBUtil {
      */
     public int execute(Connection conn, String sql, Object[] paramList) throws Exception {
         if (sql == null || sql.trim().equals("")) {
-            logger.info("parameter is valid!");
+            log.info("parameter is valid!");
         }
 
         PreparedStatement pstmt = null;
@@ -162,7 +150,7 @@ public class DBUtil {
             }
             result = pstmt.executeUpdate();
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            log.info(e.getMessage());
             throw new Exception(e);
         } finally {
             closeStatement(pstmt);
@@ -196,7 +184,7 @@ public class DBUtil {
                     try {
                         descriptor.getWriteMethod().invoke(obj, args);
                     } catch (Exception e) {
-                        logger.info("检测一下Table列，和实体类属性：" + propertyName + "" + "是否一致，并且是否是" + value.getClass() + "类型");
+                        log.info("检测一下Table列，和实体类属性：" + propertyName + "" + "是否一致，并且是否是" + value.getClass() + "类型");
                         throw new Exception(
                                 "检测一下Table列，和实体类属性：" + propertyName + "" + "是否一致，并且是否是" + value.getClass() + "类型");
                     }
@@ -228,7 +216,7 @@ public class DBUtil {
                     try {
                         descriptor.getWriteMethod().invoke(obj, args);
                     } catch (Exception e) {
-                        logger.info("检测一下Table列，和实体类属性：" + propertyName + "" + "是否一致，并且是否是" + value.getClass() + "类型");
+                        log.info("检测一下Table列，和实体类属性：" + propertyName + "" + "是否一致，并且是否是" + value.getClass() + "类型");
                         throw new Exception(
                                 "检测一下Table列，和实体类属性：" + propertyName + "" + "是否一致，并且是否是" + value.getClass() + "类型");
                     }
@@ -259,7 +247,7 @@ public class DBUtil {
      */
     public List<Map<String, Object>> getQueryList(String sql, Object[] paramList) throws Exception {
         if (sql == null || sql.trim().equals("")) {
-            logger.info("parameter is valid!");
+            log.info("parameter is valid!");
             return null;
         }
 
@@ -277,9 +265,7 @@ public class DBUtil {
             rs = getResultSet(pstmt);
             queryList = getQueryList(rs);
         } catch (RuntimeException e) {
-            logger.info(e.getMessage());
-            System.out.println("parameter is valid!");
-            throw new Exception(e);
+            e.printStackTrace();
         } finally {
             closeResultSet(rs);
             closeStatement(pstmt);
@@ -385,7 +371,7 @@ public class DBUtil {
      */
     public Map<String, Object> getObject(String sql, Object[] paramList) throws Exception {
         if (sql == null || sql.trim().equals("")) {
-            logger.info("parameter is valid!");
+            log.info("parameter is valid!");
             return null;
         }
 
@@ -407,8 +393,8 @@ public class DBUtil {
             }
             map = (HashMap) list.get(0);
         } catch (RuntimeException e) {
-            logger.info(e.getMessage());
-            logger.info("parameter is valid!");
+            log.info(e.getMessage());
+            log.info("parameter is valid!");
             throw new Exception(e);
         } finally {
             closeResultSet(rs);
@@ -504,7 +490,7 @@ public class DBUtil {
         try {
             conn.close();
         } catch (SQLException e) {
-            logger.info(e.getMessage());
+            log.info(e.getMessage());
         }
     }
 
@@ -520,7 +506,7 @@ public class DBUtil {
         try {
             stmt.close();
         } catch (SQLException e) {
-            logger.info(e.getMessage());
+            log.info(e.getMessage());
         }
     }
 
@@ -536,7 +522,7 @@ public class DBUtil {
         try {
             rs.close();
         } catch (SQLException e) {
-            logger.info(e.getMessage());
+            log.info(e.getMessage());
         }
     }
 
@@ -563,7 +549,7 @@ public class DBUtil {
     public static void beginTranscation() throws Exception {
         Connection conn = tl.get();
         if (conn != null) {
-            logger.info("事务已经开始！");
+            log.info("事务已经开始！");
             throw new SQLException("事务已经开始！");
         }
         conn = dataSource.getConnection();
@@ -579,7 +565,7 @@ public class DBUtil {
     public static void endTranscation() throws SQLException {
         Connection conn = tl.get();
         if (conn == null) {
-            logger.info("当前没有事务！");
+            log.info("当前没有事务！");
             throw new SQLException("当前没有事务！");
         }
         conn.commit();
@@ -593,7 +579,7 @@ public class DBUtil {
     public static void rollback() throws SQLException {
         Connection conn = tl.get();
         if (conn == null) {
-            logger.info("当前没有事务,不能回滚！");
+            log.info("当前没有事务,不能回滚！");
             throw new SQLException("当前没有事务,不能回滚！");
         }
         conn.rollback();
@@ -607,7 +593,7 @@ public class DBUtil {
     public static void closeConn() throws SQLException {
         Connection conn = tl.get();
         if (conn == null) {
-            logger.info("当前没有连接，不需要关闭Connection。");
+            log.info("当前没有连接，不需要关闭Connection。");
             throw new SQLException("当前没有连接，不需要关闭Connection。");
         }
         conn.close();

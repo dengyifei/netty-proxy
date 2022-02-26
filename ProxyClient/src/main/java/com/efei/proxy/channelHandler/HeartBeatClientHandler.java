@@ -12,15 +12,16 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
 @ChannelHandler.Sharable
 @Component
+@Slf4j
 public class HeartBeatClientHandler extends ChannelInboundHandlerAdapter {
 
-    private static final InternalLogger logger = InternalLoggerFactory.getInstance(HeartBeatClientHandler.class);
     private volatile  int time = 0;
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent){

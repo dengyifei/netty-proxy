@@ -26,8 +26,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ProxyTransmitClient extends Client {
 
-    private static final InternalLogger logger = InternalLoggerFactory.getInstance(ProxyTransmitClient.class);
-
     @Autowired
     private HeartBeatClientHandler heartBeatClientHandler;
 

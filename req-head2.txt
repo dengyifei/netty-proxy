@@ -1,0 +1,13 @@
+POST /api/attendance/sysquery/query/getList?queryid=35&reput=1 HTTP/1.1
+x-userId: 4DAE7576803442644E51C224E8F742495DC8D6D6BCCBE42D6796DED1D27C6B05
+Content-Type: application/json
+User-Agent: PostmanRuntime/7.26.8
+Accept: */*
+Cache-Control: no-cache
+Host: xefei.t.xx.com:9000
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Content-Length: 30
+key: bKLBwv
+
+{"search":{"empCalendarId":1}}
