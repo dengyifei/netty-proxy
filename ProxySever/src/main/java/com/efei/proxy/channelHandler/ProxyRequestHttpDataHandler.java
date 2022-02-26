@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
 
 /**
  * http 转发处理
@@ -45,7 +46,15 @@ public class ProxyRequestHttpDataHandler extends SimpleChannelInboundHandler<Ful
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         super.channelUnregistered(ctx);
-        log.info( ctx.channel() +"断开连接");
+        Cache.remove(ctx.channel().attr(Constant.KEY_USERCHANNEL).get());
+        log.info( ctx.channel() +" channelUnregistered");
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        Cache.remove(ctx.channel().attr(Constant.KEY_USERCHANNEL).get());
+        log.info( ctx.channel() +" channelInactive");
     }
 
     @Override
@@ -55,7 +64,7 @@ public class ProxyRequestHttpDataHandler extends SimpleChannelInboundHandler<Ful
 
         boolean b = NetUtil.isValidIpV4Address(host);
         if(b){
-            System.out.println("is ip");
+            log.info("is ip");
             reponse(ctx,"不能使用ip访问");
         } else {
             //System.out.println("transmitByDoamin");
@@ -66,33 +75,33 @@ public class ProxyRequestHttpDataHandler extends SimpleChannelInboundHandler<Ful
     private void transmitByDoamin(ChannelHandlerContext ctx, FullHttpRequest req,String host){
         String domain1= host.substring(0,host.indexOf("."));
         Channel c = Cache.get(domain1);
-        String key = ctx.attr(Constant.KEY_USERCHANNEL).get();
-
-        StringBuilder httpReqLine = new StringBuilder();
-        //http.append("GET /service/testGet?p=1213 HTTP/1.1\r\n");
-        // 请求行
-        HttpMethod method = req.method();
-        String methodName = method.name();
-        httpReqLine.append(methodName).append(" ");
-
-        String uri = req.uri();
-        httpReqLine.append(uri).append(" ");
-
-        HttpVersion httpVersion = req.protocolVersion();
-        String httpVersionText = httpVersion.text();
-        httpReqLine.append(httpVersionText).append("\r\n");
-
-        //请求头
-        HttpHeaders headers = req.headers();
-        headers.add("key",key);
-        StringBuilder httpHeader = new StringBuilder();
-
-        headers.forEach(e->{
-            httpHeader.append(e.getKey()).append(": ").append(e.getValue()).append("\r\n");
-        });
-        httpHeader.append("\r\n");
-        //请求体
         if(c!=null){
+            String key = ctx.attr(Constant.KEY_USERCHANNEL).get();
+
+            StringBuilder httpReqLine = new StringBuilder();
+            //http.append("GET /service/testGet?p=1213 HTTP/1.1\r\n");
+            // 请求行
+            HttpMethod method = req.method();
+            String methodName = method.name();
+            httpReqLine.append(methodName).append(" ");
+
+            String uri = req.uri();
+            httpReqLine.append(uri).append(" ");
+
+            HttpVersion httpVersion = req.protocolVersion();
+            String httpVersionText = httpVersion.text();
+            httpReqLine.append(httpVersionText).append("\r\n");
+
+            //请求头
+            HttpHeaders headers = req.headers();
+            headers.add("key",key);
+            StringBuilder httpHeader = new StringBuilder();
+
+            headers.forEach(e->{
+                httpHeader.append(e.getKey()).append(": ").append(e.getValue()).append("\r\n");
+            });
+            httpHeader.append("\r\n");
+
             httpReqLine.append(httpHeader);
             byte[] requestLineByte  = httpReqLine.toString().getBytes();
             ProxyTcpProtocolBean requestLine = new ProxyTcpProtocolBean(Constant.MSG_HTTP_PACKAGE_REQ_LINE,Constant.MSG_RQ,key,requestLineByte.length,requestLineByte);
@@ -115,17 +124,30 @@ public class ProxyRequestHttpDataHandler extends SimpleChannelInboundHandler<Ful
         }
     }
     private void reponse(ChannelHandlerContext ctx,String rep){
-        String msg = "<html><head><title>test</title></head><body>消息：" + rep+"</body></html>";
+        String msg = "<html><head><title>test</title></head><body>" + rep+"</body></html>";
         // 创建http响应
-        FullHttpResponse response = new DefaultFullHttpResponse(
-                HttpVersion.HTTP_1_1,
-                HttpResponseStatus.OK,
-                Unpooled.copiedBuffer(msg, CharsetUtil.UTF_8));
+//        FullHttpResponse response = new DefaultFullHttpResponse(
+//                HttpVersion.HTTP_1_1,
+//                HttpResponseStatus.OK,
+//                Unpooled.copiedBuffer(msg, CharsetUtil.UTF_8));
         // 设置头信息
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
+//        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
         //response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
         // 将html write到客户端
         //response.content()
-        ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        ByteBuf contentByteBuf = Unpooled.copiedBuffer(msg, CharsetUtil.UTF_8);
+        StringBuilder sb = new StringBuilder();
+        sb.append(HttpVersion.HTTP_1_1.text()).append(" ")
+          .append("200").append(" ").append("ok").append("\r\n");
+        //sb.append("Date: ").append(new Date()).append("\r\n");
+        sb.append("Content-Type: text/html; charset=UTF-8").append("\r\n");
+        sb.append("Content-Length: ").append(contentByteBuf.readableBytes()).append("\r\n");
+        sb.append("\r\n");
+
+        ByteBuf headerBuf = ctx.channel().alloc().buffer();
+        headerBuf.writeBytes(sb.toString().getBytes());
+        ChannelUtil.writeAndFlush(ctx.channel(),headerBuf);
+        ChannelUtil.writeAndFlush(ctx.channel(),contentByteBuf).addListener(ChannelFutureListener.CLOSE);
+        //ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 }

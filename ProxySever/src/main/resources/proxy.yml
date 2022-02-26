@@ -9,12 +9,17 @@ proxyHttpServer:
 #proxyTcpserver
 proxyTcpServer:
   - port: 1201
-    userName: efei
-    targetHost: 192.168.0.100
-    targetPort: 81
+    userName: hefei
+    targetHost: 127.0.0.1
+    targetPort: 8080
     maxContentLength: 5242880
-#h2
-h2:
-  url: jdbc:h2:~/h2/proxydb
-  username: root
-  password: root
+  - port: 1202
+    userName: xefei
+    targetHost: 127.0.0.1
+    targetPort: 8080
+    maxContentLength: 5242880
+  - port: 1203
+    userName: xefei
+    targetHost: x.t.aefei.cn
+    targetPort: 22
+    maxContentLength: 5242880

@@ -64,7 +64,8 @@ public class ProxyHttpClient extends Client {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             ctx.close();
-            Client c = Cache.remove(key);
+            Cache.remove(key);
+            shutdown();
             super.channelInactive(ctx);
         }
 
@@ -72,7 +73,8 @@ public class ProxyHttpClient extends Client {
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             log.info("异常退出");
             ctx.close();
-            Client c = Cache.remove(key);
+            Cache.remove(key);
+            shutdown();
             super.exceptionCaught(ctx, cause);
         }
     };
@@ -120,14 +122,16 @@ public class ProxyHttpClient extends Client {
 
     @Override
     public void onClosed() {
-        Client c = Cache.remove(key);
+        Cache.remove(key);
+        shutdown();
         log.info("cache removed:{}",key);
     }
 
     @Override
     public void onConnectFail() {
         // 连接失败
-        Client c = Cache.remove(key);
+        Cache.remove(key);
+        shutdown();
         log.info("cache removed:{}",key);
     }
 
