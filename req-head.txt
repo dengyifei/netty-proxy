@@ -1,8 +1,8 @@
-GET /service/testGet?p=1213 HTTP/1.1
+GET /api/attendance/sysquery/query/getList?queryid=19 HTTP/1.1
 Connection: keep-alive
 Content-Type: application/json
 Content-Length: 0
 Accept: */*
 Host: 192.168.50.3:8788
 User-Agent: AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36 acrabsoft.rpc.1.1
-
+
