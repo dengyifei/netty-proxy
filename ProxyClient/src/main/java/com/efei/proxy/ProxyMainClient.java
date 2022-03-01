@@ -56,12 +56,6 @@ public class ProxyMainClient {
     @Autowired
     private ProxyTransmitClient proxyTransmitClient;
 
-    @Autowired
-    private Timer timer;
-
-//    @Autowired
-//    private ReConnectEventPublisher eventPublisher;
-
     public static void main(String[] args) {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("com.efei.proxy");
         applicationContext = context;
@@ -101,10 +95,5 @@ public class ProxyMainClient {
 //            }
 //        },0,60000);
 
-    }
-
-    public static void shutdown(){
-        AnnotationConfigApplicationContext context = (AnnotationConfigApplicationContext)applicationContext;
-        context.close();
     }
 }

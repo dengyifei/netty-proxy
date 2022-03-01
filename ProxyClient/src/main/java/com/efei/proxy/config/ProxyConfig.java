@@ -34,10 +34,4 @@ public class ProxyConfig {
         propertySourcesPlaceholderConfigurer.setProperties(yaml.getObject());
         return propertySourcesPlaceholderConfigurer;
     }
-
-    @Bean
-    public Timer getTimer(){
-        Timer timer = new Timer(true);
-        return timer;
-    }
 }
